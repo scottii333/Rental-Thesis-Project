@@ -25,7 +25,7 @@ export const AdminLogIn = () => {
     <div className="flex flex-col justify-center items-center gap-[2rem]">
       <AdminHeader /> {/* Keep header unchanged */}
       <div
-        className={`flex flex-col items-center justify-center border border-solid border-black p-[2rem]  sm:w-[30rem] md:w-[30rem]  h-[30rem] transition-opacity duration-300 ${
+        className={`flex flex-col items-center justify-center shadow-lg rounded-md     p-[2rem]  sm:w-[30rem] md:w-[30rem]  h-[30rem] transition-opacity duration-300 ${
           animationState === "fade-in"
             ? "opacity-100"
             : animationState === "fade-out"
@@ -76,12 +76,10 @@ export const AdminLogIn = () => {
               Log In
             </button>
             <button
-              className="underline mt-2 text-sm"
-              onClick={() =>
-                alert("Forgot password functionality not implemented yet!")
-              }
+              className=" underline w-full max-w-[10rem] h-[2rem] mt-[1rem] rounded-md"
+              onClick={() => changeView("Forgot Password")}
             >
-              Forgot password
+              Forgot Password
             </button>
             <button
               className="bg-[#ECEFF6] hover:bg-[#623037] hover:text-white w-full max-w-[10rem] h-[2rem] mt-[1rem] rounded-md"
@@ -123,6 +121,41 @@ export const AdminLogIn = () => {
             >
               Back
             </button>
+          </>
+        )}
+
+        {/* Forgot Password */}
+        {view === "Forgot Password" && (
+          <>
+            <div className="w-[15rem]">
+              <h1 className="font-bold mb-2">Forgot Password</h1>
+              <p className="text-sm mb-8">
+                We&apos;ve sent a code to your email to verify your
+                identity.Please enter the code below to change your password
+              </p>
+              <input
+                type="text"
+                placeholder="Enter Email"
+                className="border border-solid border-black w-full h-[2rem] p-2 rounded-md mb-2"
+              />
+              <button className="bg-[#623037] text-white hover:bg-[#ECEFF6] hover:text-black w-full max-w-[15rem] h-[2rem] rounded-md mb-2">
+                Sent OTP
+              </button>
+              <input
+                type="text"
+                placeholder="Enter OTP"
+                className="border border-solid border-black w-full h-[2rem] p-2 rounded-md"
+              />
+              <button className="bg-[#623037] text-white hover:bg-[#ECEFF6] hover:text-black w-full max-w-[15rem] h-[2rem] mt-[1rem] rounded-md">
+                Verify
+              </button>
+              <button
+                className="bg-[#ECEFF6] hover:bg-[#623037] hover:text-white w-full max-w-[15rem] h-[2rem] mt-[1rem] rounded-md"
+                onClick={() => changeView("default")}
+              >
+                Back
+              </button>
+            </div>
           </>
         )}
       </div>
