@@ -80,10 +80,13 @@ export const AddVan = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-100 rounded-md">
-      <h1 className="text-2xl font-bold mb-4">Van Information</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+    <div className="p-6 bg-white ">
+      <h1 className="text-3xl font-semibold mb-6 text-center text-gray-800">
+        Add New Van
+      </h1>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Input Fields */}
           <div>
             <label
               htmlFor="vanModel"
@@ -97,7 +100,8 @@ export const AddVan = () => {
               name="vanModel"
               value={formData.vanModel}
               onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-2 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-[#623037] sm:text-sm"
+              placeholder="Enter van model"
             />
           </div>
           <div>
@@ -112,7 +116,7 @@ export const AddVan = () => {
               name="vanType"
               value={formData.vanType}
               onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-2 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-[#623037] sm:text-sm"
             >
               <option value="">Select a type</option>
               <option value="Mini">Mini</option>
@@ -133,7 +137,8 @@ export const AddVan = () => {
               name="seats"
               value={formData.seats}
               onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-2 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-[#623037] sm:text-sm"
+              placeholder="Enter number of seats"
             />
           </div>
           <div>
@@ -149,7 +154,8 @@ export const AddVan = () => {
               name="price"
               value={formData.price}
               onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-2 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-[#623037] sm:text-sm"
+              placeholder="Enter price"
             />
           </div>
           <div>
@@ -165,7 +171,8 @@ export const AddVan = () => {
               name="fuelEfficiency"
               value={formData.fuelEfficiency}
               onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-2 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-[#623037] sm:text-sm"
+              placeholder="Enter fuel efficiency"
             />
           </div>
           <div>
@@ -181,7 +188,8 @@ export const AddVan = () => {
               name="fuelType"
               value={formData.fuelType}
               onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-2 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-[#623037] sm:text-sm"
+              placeholder="Enter fuel type"
             />
           </div>
           <div>
@@ -197,7 +205,8 @@ export const AddVan = () => {
               name="transmission"
               value={formData.transmission}
               onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              className="mt-2 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-[#623037] sm:text-sm"
+              placeholder="Enter transmission type"
             />
           </div>
         </div>
@@ -207,30 +216,32 @@ export const AddVan = () => {
             htmlFor="description"
             className="block text-sm font-medium text-gray-700"
           >
-            Van Description
+            Description
           </label>
           <textarea
             id="description"
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            className="mt-2 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-[#623037] sm:text-sm"
+            rows="4"
+            placeholder="Enter description"
           ></textarea>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Van Photos
+            Upload Van Photos
           </label>
-          <div className="mt-1 flex items-center space-x-4">
+          <div className="mt-2 flex items-center space-x-4">
             {preview ? (
               <img
                 src={preview}
                 alt="Preview"
-                className="h-20 w-20 object-cover rounded-md"
+                className="h-24 w-24 object-cover rounded-md shadow"
               />
             ) : (
-              <div className="h-20 w-20 flex items-center justify-center bg-gray-200 border border-gray-300 rounded-md">
+              <div className="h-24 w-24 flex items-center justify-center bg-gray-100 border border-gray-300 rounded-md shadow">
                 <span className="text-gray-400">No Image</span>
               </div>
             )}
@@ -243,16 +254,16 @@ export const AddVan = () => {
             />
             <label
               htmlFor="vanImage"
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md cursor-pointer hover:bg-indigo-700"
+              className="px-4 py-2 bg-[#623037] text-white rounded-md cursor-pointer hover:bg-opacity-90"
             >
-              Upload Photo
+              Choose File
             </label>
           </div>
         </div>
 
         <button
           type="submit"
-          className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          className="mt-6 px-6 py-2 bg-[#623037] text-white rounded-md shadow hover:bg-opacity-90"
         >
           Add Van
         </button>

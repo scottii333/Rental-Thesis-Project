@@ -4,6 +4,11 @@ import { MainHeader } from "./Components/MainHeader";
 import { Homepage } from "./Components/Homepage";
 import { MainFooter } from "./Components/MainFooter";
 import { AddVan } from "./AdminSide/AddVan";
+import { VanPreview } from "./AdminSide/VanPreview";
+import { AdminApproved } from "./AdminSide/AdminApproved";
+import { AdminPending } from "./AdminSide/AdminPending";
+import { AdminRejected } from "./AdminSide/AdminRejected";
+import { AdminLogIn } from "./AdminSide/AdminLogIn";
 
 const router = createBrowserRouter([
   {
@@ -17,7 +22,11 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/admin",
+    path: "/admin-auth",
+    element: <AdminLogIn />,
+  },
+  {
+    path: "/admin-dashboard",
     element: <AdminDashboard />,
     children: [
       {
@@ -35,39 +44,19 @@ const router = createBrowserRouter([
       },
       {
         path: "viewVans",
-        element: (
-          <div>
-            <h1>View Vans</h1>
-            <p>Here, you can see all the vans currently in the system.</p>
-          </div>
-        ),
+        element: <VanPreview />,
       },
       {
         path: "approved",
-        element: (
-          <div>
-            <h1>Approved Vans</h1>
-            <p>Here are all the vans that have been approved.</p>
-          </div>
-        ),
+        element: <AdminApproved />,
       },
       {
         path: "pending",
-        element: (
-          <div>
-            <h1>Pending Vans</h1>
-            <p>Here are all the vans that are pending approval.</p>
-          </div>
-        ),
+        element: <AdminPending />,
       },
       {
         path: "rejected",
-        element: (
-          <div>
-            <h1>Rejected Vans</h1>
-            <p>Here are all the vans that have been rejected.</p>
-          </div>
-        ),
+        element: <AdminRejected />,
       },
       {
         path: "logout",
