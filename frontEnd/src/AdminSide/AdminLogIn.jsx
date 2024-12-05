@@ -1,9 +1,17 @@
 import { useState, useEffect } from "react";
 import { AdminHeader } from "./AdminHeader";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export const AdminLogIn = () => {
   const [view, setView] = useState("default"); // "default", "login", "signup"
   const [animationState, setAnimationState] = useState(""); // Animation state: "fade-in" or "fade-out"
+  const [formData, setFormData] = useState({
+    companyId: "",
+    email: "",
+    password: "",
+  }); // Form data
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (animationState === "fade-out") {
@@ -19,6 +27,45 @@ export const AdminLogIn = () => {
     setTimeout(() => {
       setView(newView);
     }, 300); // Matches fade-out duration
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSignup = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5098/api/Admin/signup",
+        formData
+      );
+      alert(response.data.message); // Display success message
+      setFormData({ companyId: "", email: "", password: "" });
+      changeView("login"); // Redirect to login view
+    } catch (error) {
+      alert(error.response?.data?.message || "Error during signup.");
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5098/api/Admin/login",
+        {
+          email: formData.email,
+          password: formData.password,
+        }
+      );
+      alert(response.data.message); // Display success message
+      setFormData({ companyId: "", email: "", password: "" });
+      navigate("/admin-dashboard"); // Redirect to admin dashboard
+    } catch (error) {
+      alert(error.response?.data?.message || "Invalid login credentials.");
+    }
   };
 
   return (
@@ -64,15 +111,24 @@ export const AdminLogIn = () => {
             </p>
             <input
               type="email"
+              name="email"
               placeholder="Enter your email"
+              value={formData.email || ""}
+              onChange={handleChange}
               className="border border-solid border-black w-full max-w-[20rem] h-[2rem] mb-2 mt-[1rem] p-2 rounded-md"
             />
             <input
               type="password"
+              name="password"
+              value={formData.password || ""}
               placeholder="Password"
+              onChange={handleChange}
               className="border border-solid border-black w-full max-w-[20rem] h-[2rem] p-2 rounded-md"
             />
-            <button className="bg-[#ECEFF6] hover:bg-[#623037] hover:text-white w-full max-w-[10rem] h-[2rem] mt-[1rem] rounded-md">
+            <button
+              className="bg-[#ECEFF6] hover:bg-[#623037] hover:text-white w-full max-w-[10rem] h-[2rem] mt-[1rem] rounded-md"
+              onClick={handleLogin}
+            >
               Log In
             </button>
             <button
@@ -99,20 +155,32 @@ export const AdminLogIn = () => {
             </p>
             <input
               type="text"
+              name="companyId"
               placeholder="Company ID"
+              value={formData.companyId || ""}
+              onChange={handleChange}
               className="border border-solid border-black w-full max-w-[20rem] h-[2rem] mt-[1rem] p-2 rounded-md"
             />
             <input
               type="email"
+              name="email"
               placeholder="Email"
+              value={formData.email || ""}
+              onChange={handleChange}
               className="border border-solid border-black w-full max-w-[20rem] h-[2rem] mb-2 mt-2 p-2 rounded-md"
             />
             <input
               type="password"
+              name="password"
               placeholder="Password"
+              value={formData.password || ""}
+              onChange={handleChange}
               className="border border-solid border-black w-full max-w-[20rem] h-[2rem] p-2 rounded-md"
             />
-            <button className="bg-[#ECEFF6] hover:bg-[#623037] hover:text-white w-full max-w-[10rem] h-[2rem] mt-[1rem] rounded-md">
+            <button
+              className="bg-[#ECEFF6] hover:bg-[#623037] hover:text-white w-full max-w-[10rem] h-[2rem] mt-[1rem] rounded-md"
+              onClick={handleSignup}
+            >
               Sign Up
             </button>
             <button
