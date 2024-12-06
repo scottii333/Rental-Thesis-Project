@@ -1,11 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import EasyDriveIntroBg from "../Images/EasyDriveIntroBg.png";
+import axios from "axios";
+import EasyMiles from "../Images/EasyMiles.png";
+import EasyFuel from "../Images/EasyFuel.png";
+import EasyGear from "../Images/EasyGear.png";
 
 export const Homepage = () => {
   const [pickupDate, setPickupDate] = useState(null);
   const [returnDate, setReturnDate] = useState(null);
+  const [vans, setVans] = useState([]);
+
+  useEffect(() => {
+    const fetchVans = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5098/api/Admin/GetAllVans"
+        );
+        console.log("Fetched Vans:", response.data); // Log API response
+        setVans(response.data);
+      } catch (error) {
+        console.error("Error fetching vans:", error);
+      }
+    };
+
+    fetchVans();
+  }, []);
   return (
     <div className="flex flex-col justify-center items-center">
       {/* section for intro */}
@@ -68,15 +89,58 @@ export const Homepage = () => {
           Available Vehicles
         </h2>
         <div className="rounded-md h-[20rem] overflow-x-scroll scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-gray-300">
-          <div className="flex space-x-4 md:space-x-6 lg:space-x-8">
+          <div className="flex flex-nowrap gap-[2rem] ">
             {/* Content */}
-            <div className="border-[1px] border-white rounded-md flex-shrink-0 w-[15rem] sm:w-[18rem] md:w-[20rem] h-[15rem] sm:h-[18rem] m-2"></div>
-            <div className="border-[1px] border-white rounded-md flex-shrink-0 w-[15rem] sm:w-[18rem] md:w-[20rem] h-[15rem] sm:h-[18rem] m-2"></div>
-            <div className="border-[1px] border-white rounded-md flex-shrink-0 w-[15rem] sm:w-[18rem] md:w-[20rem] h-[15rem] sm:h-[18rem] m-2"></div>
-            <div className="border-[1px] border-white rounded-md flex-shrink-0 w-[15rem] sm:w-[18rem] md:w-[20rem] h-[15rem] sm:h-[18rem] m-2"></div>
-            <div className="border-[1px] border-white rounded-md flex-shrink-0 w-[15rem] sm:w-[18rem] md:w-[20rem] h-[15rem] sm:h-[18rem] m-2"></div>
-            <div className="border-[1px] border-white rounded-md flex-shrink-0 w-[15rem] sm:w-[18rem] md:w-[20rem] h-[15rem] sm:h-[18rem] m-2"></div>
-            <div className="border-[1px] border-white rounded-md flex-shrink-0 w-[15rem] sm:w-[18rem] md:w-[20rem] h-[15rem] sm:h-[18rem] m-2"></div>
+            {vans.length > 0 ? (
+              vans.map((van) => (
+                <div
+                  key={van.id}
+                  className="flex-shrink-0 border-solid border-white border w-[20rem] h-[17rem] p-[0.5rem] rounded-md text-center"
+                >
+                  {van.image ? ( // Ensure the correct 'image' property is used here
+                    <img
+                      src={van.image} // Use 'van.image' for the Base64 string
+                      className="w-[100%] h-[10rem]  object-center rounded-md"
+                      alt={van.name}
+                    />
+                  ) : (
+                    <p>No image available</p>
+                  )}
+                  <h2 className="mt-[1rem] mb-[5px] font-bold text-white">
+                    {van.name}
+                  </h2>
+
+                  <div className="flex flex-wrap justify-around border-t-gray-400 border-t-[1px] pt-2 pb-2 gap-3">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={EasyMiles}
+                        className="w-[1.5rem] filter invert"
+                        alt="mileage icon"
+                      />
+                      <p className="text-white">{van.mileage}kM/L</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={EasyFuel}
+                        className="w-[1.5rem] filter invert"
+                        alt="fuel type icon"
+                      />
+                      <p className="text-white">{van.fuelType}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={EasyGear}
+                        className="w-[1.5rem] filter invert"
+                        alt="transmission icon"
+                      />
+                      <p className="text-white">{van.transmission}</p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p>Loading vans...</p>
+            )}
           </div>
         </div>
       </div>

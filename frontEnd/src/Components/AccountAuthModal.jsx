@@ -11,6 +11,10 @@ export const AccountAuthModal = ({ isOpen, onClose, isSignUp, toggleMode }) => {
 
   if (!isOpen) return null;
 
+  const handleForgotPassword = () => {
+    alert("Functionality to be implemented soon");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(""); // Clear previous error messages
@@ -127,9 +131,12 @@ export const AccountAuthModal = ({ isOpen, onClose, isSignUp, toggleMode }) => {
         )}
         {!isSignUp && (
           <p className="text-center mt-2">
-            <a href="#" className="text-[#6C2A4D] hover:underline">
+            <button
+              onClick={handleForgotPassword}
+              className="text-[#6C2A4D] hover:underline"
+            >
               Forgot password?
-            </a>
+            </button>
           </p>
         )}
       </div>

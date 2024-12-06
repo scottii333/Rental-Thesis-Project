@@ -10,6 +10,7 @@ import { AdminPending } from "./AdminSide/AdminPending";
 import { AdminRejected } from "./AdminSide/AdminRejected";
 import { AdminLogIn } from "./AdminSide/AdminLogIn";
 import { ErrorPage } from "./Components/ErrorPage";
+import { AvailableVan } from "./Components/AvailableVan";
 
 const router = createBrowserRouter([
   {
@@ -21,6 +22,11 @@ const router = createBrowserRouter([
         <MainFooter />
       </div>
     ),
+    errorElement: <ErrorPage />, // Handles errors for this route
+  },
+  {
+    path: "/availableVan",
+    element: <AvailableVan />,
     errorElement: <ErrorPage />, // Handles errors for this route
   },
   {

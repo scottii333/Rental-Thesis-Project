@@ -40,8 +40,12 @@ export const VanPreview = () => {
             ) : (
               <p>No image available</p>
             )}
-            <h2 className="mt-[1rem] mb-[5px]">{van.name}</h2>
-            <h3 className="mb-[1rem]">{van.description}</h3>
+            <h2 className="mt-[1rem] mb-[5px] font-bold">{van.name}</h2>
+            <h3 className="mb-[1rem]">
+              {van.description.length > 15
+                ? `${van.description.substring(0, 70)}...`
+                : van.description}
+            </h3>
             <div className="flex flex-wrap justify-around border-t-gray-400 border-t-[1px] pt-2 pb-2 gap-3">
               <div className="flex items-center gap-2">
                 <img
@@ -49,7 +53,7 @@ export const VanPreview = () => {
                   className="w-[1.5rem]"
                   alt="mileage icon"
                 />
-                <p>{van.mileage}</p>
+                <p>{van.mileage}kM/L</p>
               </div>
               <div className="flex items-center gap-2">
                 <img
@@ -69,10 +73,10 @@ export const VanPreview = () => {
               </div>
             </div>
             <div className="flex flex-wrap justify-around items-center">
-              <div className="flex justify-around items-center w-[10rem] mt-2 mb-2 ">
-                <h2>{van.price}</h2>
+              <div className="flex justify-around items-center w-[8.2rem] mt-2 mb-2 ">
+                <h2>₱{van.price}</h2>
                 <p className="text-[10px] text-gray-400">
-                  {van.capacity} Passengers
+                  4-{van.capacity} Passengers
                 </p>
               </div>
               <button className="text-[#0292B7] text-[0.7rem]">
