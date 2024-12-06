@@ -9,7 +9,6 @@ import { AdminApproved } from "./AdminSide/AdminApproved";
 import { AdminPending } from "./AdminSide/AdminPending";
 import { AdminRejected } from "./AdminSide/AdminRejected";
 import { AdminLogIn } from "./AdminSide/AdminLogIn";
-import { ErrorPage } from "./Components/ErrorPage";
 
 const router = createBrowserRouter([
   {
@@ -21,17 +20,14 @@ const router = createBrowserRouter([
         <MainFooter />
       </div>
     ),
-    errorElement: <ErrorPage />, // Handles errors for this route
   },
   {
     path: "/admin-auth",
     element: <AdminLogIn />,
-    errorElement: <ErrorPage />, // Handles errors for this route
   },
   {
     path: "/admin-dashboard",
     element: <AdminDashboard />,
-    errorElement: <ErrorPage />, // Handles errors for this route
     children: [
       {
         path: "",
