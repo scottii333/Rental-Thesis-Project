@@ -66,6 +66,8 @@ namespace backEnd.Controllers
 
 
 
+
+
         // POST: api/Admin/login
         [HttpPost("login")]
         public IActionResult AdminLogin([FromBody] AdminModel admin)
@@ -208,6 +210,100 @@ namespace backEnd.Controllers
                 return StatusCode(500, new { message = "Error occurred.", error = ex.Message });
             }
         }
+
+
+
+
+        // POST: api/Customer/CustomerSignup
+        [HttpPost("CustomerSignup")]
+        public IActionResult CustomerSignup([FromBody] CustomerModel customer)
+        {
+            try
+            {
+                Console.WriteLine("Checking if the Customers table exists...");
+
+                // Ensure the Customers table exists
+                var tableExistsQuery = @"
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CustomersAcc' AND xtype='U')
+                CREATE TABLE CustomersAcc (
+                    Id INT IDENTITY(1,1) PRIMARY KEY,
+                    FullName NVARCHAR(100) NOT NULL,
+                    Email NVARCHAR(100) NOT NULL UNIQUE,
+                    Password NVARCHAR(100) NOT NULL
+                )";
+                _context.Database.ExecuteSqlRaw(tableExistsQuery);
+
+                Console.WriteLine("Table check complete. Adding new customer...");
+
+                // Check if the email already exists
+                var existingCustomer = _context.Customers.FirstOrDefault(c => c.Email == customer.Email);
+                if (existingCustomer != null)
+                {
+                    Console.WriteLine("Email already registered.");
+                    return BadRequest(new { message = "Email already registered. Please log in." });
+                }
+
+                // Insert new customer
+                _context.Customers.Add(customer);
+                _context.SaveChanges();
+
+                Console.WriteLine("Customer registered successfully.");
+                return Ok(new { message = "Customer registered successfully!" });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during signup: {ex.Message}");
+                return StatusCode(500, new { message = "Error occurred.", error = ex.Message });
+            }
+        }
+
+
+        // POST: api/Customer/CustomerLogin
+        [HttpPost("CustomerLogin")]
+        public IActionResult CustomerLogin([FromBody] LoginRequestModel loginRequest)
+        {
+            try
+            {
+                Console.WriteLine("Attempting to log in...");
+
+                // Validate the incoming request
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+
+                    return BadRequest(new { message = "Validation failed", errors });
+                }
+
+                // Check if the email and password match
+                var customer = _context.Customers.FirstOrDefault(c =>
+                    c.Email == loginRequest.Email && c.Password == loginRequest.Password);
+
+                if (customer == null)
+                {
+                    Console.WriteLine("Invalid login attempt.");
+                    return Unauthorized(new { message = "Invalid email or password." });
+                }
+
+                Console.WriteLine("Login successful.");
+                return Ok(new
+                {
+                    message = "Login successful!",
+                    customerId = customer.Id,
+                    fullName = customer.FullName,
+                    email = customer.Email
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during login: {ex.Message}");
+                return StatusCode(500, new { message = "Error occurred.", error = ex.Message });
+            }
+        }
+
+
     }
 
 

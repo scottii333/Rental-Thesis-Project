@@ -11,6 +11,9 @@ import { AdminRejected } from "./AdminSide/AdminRejected";
 import { AdminLogIn } from "./AdminSide/AdminLogIn";
 import { ErrorPage } from "./Components/ErrorPage";
 import { AvailableVan } from "./Components/AvailableVan";
+import { OrderDetails } from "./Components/OrderDetails";
+import { OrderSummary } from "./Components/OrderSummary";
+import { CustomerDashboard } from "./CustomerSide/CustomerDashboard";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +30,16 @@ const router = createBrowserRouter([
   {
     path: "/availableVan",
     element: <AvailableVan />,
+    errorElement: <ErrorPage />, // Handles errors for this route
+  },
+  {
+    path: "/orderDetails",
+    element: <OrderDetails />,
+    errorElement: <ErrorPage />, // Handles errors for this route
+  },
+  {
+    path: "/orderSummary",
+    element: <OrderSummary />,
     errorElement: <ErrorPage />, // Handles errors for this route
   },
   {
@@ -78,6 +91,11 @@ const router = createBrowserRouter([
         ),
       },
     ],
+  },
+  {
+    path: "/customer",
+    element: <CustomerDashboard />,
+    errorElement: <ErrorPage />, // Handles errors for this route
   },
 ]);
 

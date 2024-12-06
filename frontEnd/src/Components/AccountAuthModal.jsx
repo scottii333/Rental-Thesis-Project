@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export const AccountAuthModal = ({ isOpen, onClose, isSignUp, toggleMode }) => {
   const [email, setEmail] = useState("");
@@ -8,6 +9,8 @@ export const AccountAuthModal = ({ isOpen, onClose, isSignUp, toggleMode }) => {
   const [fullName, setFullName] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  const navigate = useNavigate(); // React Router's navigation hook
 
   if (!isOpen) return null;
 
@@ -20,39 +23,55 @@ export const AccountAuthModal = ({ isOpen, onClose, isSignUp, toggleMode }) => {
     setError(""); // Clear previous error messages
     setMessage(""); // Clear previous success messages
 
+    // Input validation before API call
+    if (!email || !password || (isSignUp && !fullName)) {
+      setError("All fields are required.");
+      return;
+    }
+
     try {
       if (isSignUp) {
         // Sign Up logic
-        await axios.post("http://localhost:5259/api/customer/signup", {
-          fullName,
-          email,
-          password,
-        });
-        alert("Registration successful!"); // Show success alert
-        window.location.href = "/customer"; // Redirect to Customer Dashboard
+        const response = await axios.post(
+          "http://localhost:5089/api/Admin/CustomerSignup",
+          {
+            fullName,
+            email,
+            password,
+          }
+        );
+        setMessage(response.data.message); // Display success message
+        alert("Registration successful!");
+        toggleMode(false); // Switch to login mode
       } else {
         // Log In logic
-        const { data } = await axios.post(
-          "http://localhost:5259/api/customer/login",
+        const response = await axios.post(
+          "http://localhost:5089/api/Admin/CustomerLogin",
           {
             email,
             password,
           }
         );
-        localStorage.setItem("token", data.token); // Save JWT token
-        alert("Login successful!"); // Show success alert
-        if (data.isAdmin) {
-          window.location.href = "/admin"; // Redirect to Admin Dashboard
-        } else {
-          window.location.href = "/customer"; // Redirect to Customer Dashboard
-        }
+
+        const { customerId, fullName: userFullName } = response.data;
+
+        // Save user details to localStorage
+        localStorage.setItem("customerId", customerId);
+        localStorage.setItem("customerName", userFullName);
+
+        setMessage(`Welcome, ${userFullName}!`);
+        alert("Login successful!");
+
+        // Redirect to the /customer route
+        navigate("/customer");
       }
     } catch (err) {
       const errorMessage =
         err.response?.data?.message ||
+        err.message ||
         "Something went wrong. Please try again.";
-      setError(errorMessage);
-      alert(`Error: ${errorMessage}`); // Show error alert
+      setError(errorMessage); // Display error message
+      alert(`Error: ${errorMessage}`);
     }
   };
 

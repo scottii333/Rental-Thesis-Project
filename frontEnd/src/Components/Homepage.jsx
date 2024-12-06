@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import EasyDriveIntroBg from "../Images/EasyDriveIntroBg.png";
@@ -10,7 +11,9 @@ import EasyGear from "../Images/EasyGear.png";
 export const Homepage = () => {
   const [pickupDate, setPickupDate] = useState(null);
   const [returnDate, setReturnDate] = useState(null);
+  const [location, setLocation] = useState("");
   const [vans, setVans] = useState([]);
+  const navigate = useNavigate(); // For navigation
 
   useEffect(() => {
     const fetchVans = async () => {
@@ -27,6 +30,33 @@ export const Homepage = () => {
 
     fetchVans();
   }, []);
+
+  const handleViewVehicles = () => {
+    if (!location || !pickupDate || !returnDate) {
+      alert("Please fill out all fields.");
+      return;
+    }
+
+    if (pickupDate < new Date() || returnDate < new Date()) {
+      alert("Dates must be current or future dates.");
+      return;
+    }
+
+    if (pickupDate >= returnDate) {
+      alert("Return date must be after the pickup date.");
+      return;
+    }
+
+    // Redirect to /availableVan with the data
+    navigate("/availableVan", {
+      state: {
+        location,
+        pickupDate,
+        returnDate,
+      },
+    });
+  };
+
   return (
     <div className="flex flex-col justify-center items-center">
       {/* section for intro */}
@@ -51,6 +81,8 @@ export const Homepage = () => {
           <div className="flex flex-col w-full md:w-1/4">
             <input
               type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
               placeholder="Enter Location"
               className=" bg-white bg-opacity-55 px-4 py-2 rounded-md text-black placeholder:text-white"
             />
@@ -77,7 +109,10 @@ export const Homepage = () => {
           </div>
 
           {/* View Vehicles Button */}
-          <button className="bg-[#201207] text-white px-6 py-3 rounded-md hover:bg-[#33150e] transition w-full md:w-auto">
+          <button
+            onClick={handleViewVehicles}
+            className="bg-[#201207] text-white px-6 py-3 rounded-md hover:bg-[#33150e] transition w-full md:w-auto"
+          >
             View Vehicles
           </button>
         </div>

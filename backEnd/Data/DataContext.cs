@@ -10,6 +10,8 @@ namespace backEnd.Data
         public DbSet<AdminModel> Admins { get; set; }
         public DbSet<PreviewVans> AvailableVans { get; set; }
 
+        public DbSet<CustomerModel> Customers { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Map AdminModel to AdminAcc table
@@ -25,6 +27,10 @@ namespace backEnd.Data
 
             // Add Index for frequently queried fields
             modelBuilder.Entity<PreviewVans>().HasIndex(v => v.Name);
+
+             // Map CustomerModel to CustomersAcc table
+            modelBuilder.Entity<CustomerModel>().ToTable("CustomersAcc");
+            modelBuilder.Entity<CustomerModel>().HasKey(c => c.Id);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

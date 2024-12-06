@@ -5,12 +5,21 @@ import EasyMiles from "../Images/EasyMiles.png";
 import EasyFuel from "../Images/EasyFuel.png";
 import EasyGear from "../Images/EasyGear.png";
 import { AccountAuthModal } from "./AccountAuthModal";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export const AvailableVan = () => {
   const [vans, setVans] = useState([]);
   const [selectedVan, setSelectedVan] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control login modal
   const [isSignUp, setIsSignUp] = useState(false); // Default to login mode
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const {
+    location: userLocation,
+    pickupDate,
+    returnDate,
+  } = location.state || {};
 
   useEffect(() => {
     const fetchVans = async () => {
@@ -36,12 +45,17 @@ export const AvailableVan = () => {
     setSelectedVan(null);
   };
 
-  // Function to open the login modal
   const handleChooseVan = () => {
-    setIsModalOpen(true);
-    setIsSignUp(false); // Default to Log In mode
+    // Redirect to the order details page with the selected van and user data
+    navigate("/orderDetails", {
+      state: {
+        selectedVan,
+        userLocation,
+        pickupDate,
+        returnDate,
+      },
+    });
   };
-
   return (
     <div>
       <MainHeader />
