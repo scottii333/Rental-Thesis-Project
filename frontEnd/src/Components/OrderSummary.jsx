@@ -48,16 +48,39 @@ export const OrderSummary = () => {
 
   // Confirm details handler
   const handleConfirmDetails = () => {
-    if (!paymentProof) {
-      alert("Please upload proof of payment before confirming.");
+    if (paymentMethod === "gcash" && !paymentProof) {
+      alert("Please upload proof of payment for GCash before confirming.");
       return;
     }
+
+    // Gather all the details to log
+    const bookingDetails = {
+      selectedVan,
+      userLocation,
+      pickupDate: pickupDate
+        ? new Date(pickupDate).toLocaleDateString()
+        : "N/A",
+      returnDate: returnDate
+        ? new Date(returnDate).toLocaleDateString()
+        : "N/A",
+      streetAddress,
+      city,
+      province,
+      zip,
+      mobileNumber,
+      rentalOption:
+        rentalOption === "self-drive" ? "Self-Drive" : "With Driver",
+      paymentDetails: {
+        method: paymentMethod,
+        type: paymentType,
+        proof: paymentProof ? paymentProof.name : "None",
+      },
+    };
+
+    // Log all the details
+    console.log("Booking Details:", bookingDetails);
+
     alert("Details confirmed successfully! Thank you for your payment.");
-    console.log({
-      paymentMethod,
-      paymentType,
-      proof: paymentProof,
-    });
   };
 
   return (

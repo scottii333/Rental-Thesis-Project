@@ -33,7 +33,7 @@ export const AccountAuthModal = ({ isOpen, onClose, isSignUp, toggleMode }) => {
       if (isSignUp) {
         // Sign Up logic
         const response = await axios.post(
-          "http://localhost:5089/api/Admin/CustomerSignup",
+          "http://localhost:5098/api/Admin/CustomerSignup",
           {
             fullName,
             email,
@@ -46,7 +46,7 @@ export const AccountAuthModal = ({ isOpen, onClose, isSignUp, toggleMode }) => {
       } else {
         // Log In logic
         const response = await axios.post(
-          "http://localhost:5089/api/Admin/CustomerLogin",
+          "http://localhost:5098/api/Admin/CustomerLogin",
           {
             email,
             password,
