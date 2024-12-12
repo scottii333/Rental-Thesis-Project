@@ -118,6 +118,7 @@ export const Homepage = () => {
         </div>
       </div>
 
+
       {/* section for Vehicles */}
       <div className="flex flex-col border-solid h-auto max-w-[80%] mx-auto mt-[3rem] mb-[3rem] gap-[1rem] p-[1rem]">
         <h2 className="text-white text-[2rem] text-center sm:text-left">
@@ -179,6 +180,8 @@ export const Homepage = () => {
           </div>
         </div>
       </div>
+
+      
     </div>
   );
 };

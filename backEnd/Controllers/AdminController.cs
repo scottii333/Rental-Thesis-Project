@@ -100,7 +100,7 @@ namespace backEnd.Controllers
 
 
         [HttpPost("AdminAddVan")]
-        public async Task<IActionResult> AdminAddVan([FromForm] VanModel van, IFormFile image)
+        public async Task<IActionResult> AdminAddVan([FromForm] PreviewVans van, IFormFile image)
         {
             try
             {

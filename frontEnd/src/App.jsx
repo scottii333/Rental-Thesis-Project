@@ -6,13 +6,12 @@ import { MainFooter } from "./Components/MainFooter";
 import { AddVan } from "./AdminSide/AddVan";
 import { VanPreview } from "./AdminSide/VanPreview";
 import { AdminApproved } from "./AdminSide/AdminApproved";
-import { AdminPending } from "./AdminSide/AdminPending";
-import { AdminRejected } from "./AdminSide/AdminRejected";
 import { AdminLogIn } from "./AdminSide/AdminLogIn";
 import { ErrorPage } from "./Components/ErrorPage";
 import { AvailableVan } from "./Components/AvailableVan";
 import { OrderDetails } from "./Components/OrderDetails";
 import { OrderSummary } from "./Components/OrderSummary";
+import { AdminHistory } from "./AdminSide/AdminHistory";
 import { CustomerDashboard } from "./CustomerSide/CustomerDashboard";
 
 const router = createBrowserRouter([
@@ -74,12 +73,8 @@ const router = createBrowserRouter([
         element: <AdminApproved />,
       },
       {
-        path: "pending",
-        element: <AdminPending />,
-      },
-      {
-        path: "rejected",
-        element: <AdminRejected />,
+        path: "history",
+        element: <AdminHistory />,
       },
       {
         path: "logout",

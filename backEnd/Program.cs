@@ -18,8 +18,17 @@ builder.Services.AddCors(options =>
 });
 
 // Register the DataContext
-builder.Services.AddDbContext<DataContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<DataContext>((serviceProvider, options) =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
+    {
+        sqlOptions.CommandTimeout(1200); // Command timeout
+        sqlOptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null); // Retry logic
+    });
+});
+
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

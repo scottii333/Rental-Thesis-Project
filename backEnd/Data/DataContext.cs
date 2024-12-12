@@ -5,12 +5,16 @@ namespace backEnd.Data
 {
     public class DataContext : DbContext
     {
-        public DataContext(DbContextOptions<DataContext> options) : base(options) { }
+        private readonly IConfiguration _configuration;
 
-        public DbSet<AdminModel> Admins { get; set; }
-        public DbSet<PreviewVans> AvailableVans { get; set; }
+        public DataContext(DbContextOptions<DataContext> options, IConfiguration configuration) : base(options) {
+            _configuration = configuration;
+         }
 
-        public DbSet<CustomerModel> Customers { get; set; }
+        public required DbSet<AdminModel> Admins { get; set; }
+        public required DbSet<PreviewVans> AvailableVans { get; set; }
+
+        public required DbSet<CustomerModel> Customers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,17 +32,20 @@ namespace backEnd.Data
             // Add Index for frequently queried fields
             modelBuilder.Entity<PreviewVans>().HasIndex(v => v.Name);
 
-             // Map CustomerModel to CustomersAcc table
+            // Map CustomerModel to CustomersAcc table
             modelBuilder.Entity<CustomerModel>().ToTable("CustomersAcc");
             modelBuilder.Entity<CustomerModel>().HasKey(c => c.Id);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=SCOTTIIEEE\\SQLEXPRESS;Database=EasyDriveDB;Trusted_Connection=True;TrustServerCertificate=True;", options =>
+           if (!optionsBuilder.IsConfigured)
+        {
+            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DefaultConnection"), options =>
             {
-                options.CommandTimeout(120); // Set timeout to 120 seconds
+                options.CommandTimeout(1200); // Set timeout to 1200 seconds
             });
+        }
         }
     }
 }

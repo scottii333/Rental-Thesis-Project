@@ -70,24 +70,14 @@ export const AdminDashboard = () => {
             Approved
           </NavLink>
           <NavLink
-            to="pending"
+            to="history"
             className={({ isActive }) =>
               isActive
                 ? "rounded-md bg-white text-black text-[10px] md:text-base lg:text-lg transition ease-in-out duration-500 py-2 px-4 flex items-center justify-center"
                 : "rounded-md hover:bg-white hover:text-black text-[10px] md:text-base lg:text-lg transition ease-in-out duration-500 py-2 px-4 flex items-center justify-center"
             }
           >
-            Pending
-          </NavLink>
-          <NavLink
-            to="rejected"
-            className={({ isActive }) =>
-              isActive
-                ? "rounded-md bg-white text-black text-[10px] md:text-base lg:text-lg transition ease-in-out duration-500 py-2 px-4 flex items-center justify-center"
-                : "rounded-md hover:bg-white hover:text-black text-[10px] md:text-base lg:text-lg transition ease-in-out duration-500 py-2 px-4 flex items-center justify-center"
-            }
-          >
-            Rejected
+            History
           </NavLink>
           <button
             onClick={handleLogout}

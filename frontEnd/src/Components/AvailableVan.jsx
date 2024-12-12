@@ -27,7 +27,7 @@ export const AvailableVan = () => {
         const response = await axios.get(
           "http://localhost:5098/api/Admin/GetAllVans"
         );
-        console.log("Fetched Vans:", response.data); // Log API response
+        console.log("Fetched Available Components Vans:", response.data); // Log API response
         setVans(response.data);
       } catch (error) {
         console.error("Error fetching vans:", error);
@@ -62,7 +62,7 @@ export const AvailableVan = () => {
       <div className="flex flex-col items-center ">
         <h1 className="text-2xl w-[95%] m-[1rem]">SELECT YOUR VAN</h1>
         <div className=" w-[95%] h-[auto] m-[1rem]">
-          <div className="border-red-600 border flex flex-wrap justify-center m-[0.5rem] h-[auto] p-[1rem] gap-[1rem] ">
+          <div className="flex flex-wrap justify-center m-[0.5rem] h-[auto] p-[1rem] gap-[1rem] ">
             {vans.length > 0 ? (
               vans.map((van) => (
                 <div
