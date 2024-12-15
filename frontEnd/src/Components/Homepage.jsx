@@ -7,6 +7,8 @@ import axios from "axios";
 import EasyMiles from "../Images/EasyMiles.png";
 import EasyFuel from "../Images/EasyFuel.png";
 import EasyGear from "../Images/EasyGear.png";
+import { Services } from "./Services";
+import { Pricing } from "./Pricing";
 
 export const Homepage = () => {
   const [pickupDate, setPickupDate] = useState(null);
@@ -118,7 +120,6 @@ export const Homepage = () => {
         </div>
       </div>
 
-
       {/* section for Vehicles */}
       <div className="flex flex-col border-solid h-auto max-w-[80%] mx-auto mt-[3rem] mb-[3rem] gap-[1rem] p-[1rem]">
         <h2 className="text-white text-[2rem] text-center sm:text-left">
@@ -181,7 +182,11 @@ export const Homepage = () => {
         </div>
       </div>
 
-      
+      {/* section for Pricing */}
+      <Pricing />
+
+      {/* section for Services */}
+      <Services />
     </div>
   );
 };

@@ -24,7 +24,10 @@ export const MainFooter = () => {
       />
 
       {/* Contact Us */}
-      <div className="flex flex-col p-[1rem] gap-[0.5rem] text-white text-center">
+      <div
+        id="Contact"
+        className="flex flex-col p-[1rem] gap-[0.5rem] text-white text-center"
+      >
         <h3 className="text-lg font-semibold">Contact Us</h3>
         <p>easydrive-csr@gmail.com</p>
         <p>123-456-7890</p>

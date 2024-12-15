@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-scroll";
 import { AccountAuthModal } from "./AccountAuthModal"; // Import the modal
 import EasyDriveLogo from "../Images/EasyDriveLogo.png";
 
@@ -15,24 +16,28 @@ export const MainHeader = () => {
       <div className="bg-[#201207] w-full h-[6rem] flex items-center justify-around px-4">
         {/* Navigation Links (Desktop Only) */}
         <div className="hidden md:flex space-x-4">
-          <a
-            href="/"
-            className="text-white p-2 rounded-[0.5rem] hover:bg-white hover:text-black hover:rounded-[0.5rem] transition ease-in-out duration-500"
+          <Link
+            to="Services"
+            smooth={true}
+            duration={500} // 500ms for smooth scroll
+            className="text-white p-2 rounded-[0.5rem] hover:bg-white hover:text-black hover:rounded-[0.5rem] cursor-pointer transition ease-in-out duration-500"
           >
             Services
-          </a>
+          </Link>
           <a
             href="/"
             className="text-white p-2 rounded-[0.5rem] hover:bg-white hover:text-black hover:rounded-[0.5rem] transition ease-in-out duration-500"
           >
             Pricing
           </a>
-          <a
-            href="/"
-            className="text-white p-2 rounded-[0.5rem] hover:bg-white hover:text-black hover:rounded-[0.5rem] transition ease-in-out duration-500"
+          <Link
+            to="Contact"
+            smooth={true}
+            duration={500} // 500ms for smooth scroll
+            className="text-white p-2 rounded-[0.5rem] hover:bg-white hover:text-black hover:rounded-[0.5rem] cursor-pointer transition ease-in-out duration-500"
           >
             Contact Us
-          </a>
+          </Link>
         </div>
 
         {/* Logo in the Center */}
@@ -90,24 +95,29 @@ export const MainHeader = () => {
       {isMobileNavOpen && (
         <div className="w-full flex flex-col items-center bg-[#201207] text-white space-y-4 py-4 md:hidden">
           {/* Navigation Links */}
-          <a
-            href="/"
-            className="text-white p-2 rounded-[0.5rem] hover:bg-white hover:text-black hover:rounded-[0.5rem] transition ease-in-out duration-500"
+
+          <Link
+            to="Services"
+            smooth={true}
+            duration={500} // 500ms for smooth scroll
+            className="text-white p-2 rounded-[0.5rem] hover:bg-white hover:text-black hover:rounded-[0.5rem] cursor-pointer transition ease-in-out duration-500"
           >
             Services
-          </a>
+          </Link>
           <a
             href="/"
             className="text-white p-2 rounded-[0.5rem] hover:bg-white hover:text-black hover:rounded-[0.5rem] transition ease-in-out duration-500"
           >
             Pricing
           </a>
-          <a
-            href="/"
-            className="text-white p-2 rounded-[0.5rem] hover:bg-white hover:text-black hover:rounded-[0.5rem] transition ease-in-out duration-500"
+          <Link
+            to="Contact"
+            smooth={true}
+            duration={500} // 500ms for smooth scroll
+            className="text-white p-2 rounded-[0.5rem] hover:bg-white hover:text-black hover:rounded-[0.5rem] cursor-pointer transition ease-in-out duration-500"
           >
             Contact Us
-          </a>
+          </Link>
 
           {/* Authentication Buttons */}
           <button
