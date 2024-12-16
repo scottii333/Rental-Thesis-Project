@@ -7,14 +7,17 @@ namespace backEnd.Data
     {
         private readonly IConfiguration _configuration;
 
-        public DataContext(DbContextOptions<DataContext> options, IConfiguration configuration) : base(options) {
+        public DataContext(DbContextOptions<DataContext> options, IConfiguration configuration) : base(options)
+        {
             _configuration = configuration;
-         }
+        }
 
         public required DbSet<AdminModel> Admins { get; set; }
         public required DbSet<PreviewVans> AvailableVans { get; set; }
 
         public required DbSet<CustomerModel> Customers { get; set; }
+
+        public required DbSet<CustomerRequestModel> CustomerRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,17 +38,25 @@ namespace backEnd.Data
             // Map CustomerModel to CustomersAcc table
             modelBuilder.Entity<CustomerModel>().ToTable("CustomersAcc");
             modelBuilder.Entity<CustomerModel>().HasKey(c => c.Id);
+
+            // Map CustomerRequestModel to CustomerRequests table
+            modelBuilder.Entity<CustomerRequestModel>().ToTable("CustomerRequests");
+            modelBuilder.Entity<CustomerRequestModel>().HasKey(cr => cr.ReferenceId); // Set ReferenceId as PK
+            modelBuilder.Entity<CustomerRequestModel>().Property(cr => cr.PaymentProof).HasColumnType("varbinary(max)"); // Configure binary type
+            modelBuilder.Entity<CustomerRequestModel>().Property(cr => cr.ReferenceId).IsRequired(); // Ensure ReferenceId is not null
+            modelBuilder.Entity<CustomerRequestModel>().Property(cr => cr.SelectedVan).IsRequired();
+
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-           if (!optionsBuilder.IsConfigured)
-        {
-            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DefaultConnection"), options =>
+            if (!optionsBuilder.IsConfigured)
             {
-                options.CommandTimeout(1200); // Set timeout to 1200 seconds
-            });
-        }
+                optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DefaultConnection"), options =>
+                {
+                    options.CommandTimeout(1200); // Set timeout to 1200 seconds
+                });
+            }
         }
     }
 }

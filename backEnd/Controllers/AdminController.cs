@@ -304,6 +304,115 @@ namespace backEnd.Controllers
         }
 
 
+        // POST: api/Admin/CustomerRequest
+        [HttpPost("CustomerRequest")]
+        public async Task<IActionResult> CustomerRequest([FromForm] CustomerRequestModel request, [FromForm] IFormFile? paymentProof)
+        {
+            try
+            {
+                Console.WriteLine($"ReferenceId: {request.ReferenceId}");
+                Console.WriteLine($"SelectedVan: {request.SelectedVan}");
+                Console.WriteLine($"UserLocation: {request.UserLocation}");
+                Console.WriteLine($"PickupDate: {request.PickupDate}");
+                Console.WriteLine($"ReturnDate: {request.ReturnDate}");
+                Console.WriteLine($"StreetAddress: {request.StreetAddress}");
+                Console.WriteLine($"City: {request.City}");
+                Console.WriteLine($"Province: {request.Province}");
+                Console.WriteLine($"Zip: {request.Zip}");
+                Console.WriteLine($"MobileNumber: {request.MobileNumber}");
+                Console.WriteLine($"RentalOption: {request.RentalOption}");
+                Console.WriteLine($"PaymentMethod: {request.PaymentMethod}");
+                Console.WriteLine($"PaymentType: {request.PaymentType}");
+                Console.WriteLine($"PaymentProofFileName: {paymentProof?.FileName}");
+                Console.WriteLine("Checking if the CustomerRequests table exists...");
+
+
+                // Ensure the CustomerRequests table exists
+                var tableExistsQuery = @"
+        IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CustomerRequests' AND xtype='U')
+        CREATE TABLE CustomerRequests (
+            ReferenceId NVARCHAR(20) NOT NULL PRIMARY KEY,
+            SelectedVan NVARCHAR(MAX) NOT NULL,
+            UserLocation NVARCHAR(255) NOT NULL,
+            PickupDate DATETIME NOT NULL,
+            ReturnDate DATETIME NOT NULL,
+            StreetAddress NVARCHAR(255) NOT NULL,
+            City NVARCHAR(100) NOT NULL,
+            Province NVARCHAR(100) NOT NULL,
+            Zip NVARCHAR(20) NOT NULL,
+            MobileNumber NVARCHAR(20) NOT NULL,
+            RentalOption NVARCHAR(50) NOT NULL,
+            PaymentMethod NVARCHAR(50) NOT NULL,
+            PaymentType NVARCHAR(50) NOT NULL,
+            PaymentProof VARBINARY(MAX) NULL
+        )";
+                await _context.Database.ExecuteSqlRawAsync(tableExistsQuery);
+
+                Console.WriteLine("Table check complete. Adding new customer request...");
+
+                // Check if the ReferenceId is unique
+                var existingRequest = await _context.CustomerRequests
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(cr => cr.ReferenceId == request.ReferenceId);
+
+                if (existingRequest != null)
+                {
+                    return BadRequest(new { message = "ReferenceId must be unique." });
+                }
+
+                // Convert the payment proof file to a byte array if provided
+                byte[]? paymentProofBytes = null;
+                if (paymentProof != null)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        await paymentProof.CopyToAsync(ms);
+                        paymentProofBytes = ms.ToArray();
+                    }
+                }
+
+                // Use parameterized query to insert the request into the database
+                var insertQuery = @"
+        INSERT INTO CustomerRequests 
+        (ReferenceId, SelectedVan, UserLocation, PickupDate, ReturnDate, StreetAddress, City, Province, Zip, MobileNumber, RentalOption, PaymentMethod, PaymentType, PaymentProof)
+        VALUES 
+        (@ReferenceId, @SelectedVan, @UserLocation, @PickupDate, @ReturnDate, @StreetAddress, @City, @Province, @Zip, @MobileNumber, @RentalOption, @PaymentMethod, @PaymentType, @PaymentProof)";
+
+                var parameters = new[]
+                {
+            new SqlParameter("@ReferenceId", SqlDbType.NVarChar, 20) { Value = request.ReferenceId },
+            new SqlParameter("@SelectedVan", SqlDbType.NVarChar) { Value = request.SelectedVan ?? (object)DBNull.Value },
+            new SqlParameter("@UserLocation", SqlDbType.NVarChar, 255) { Value = request.UserLocation ?? (object)DBNull.Value },
+            new SqlParameter("@PickupDate", SqlDbType.DateTime) { Value = request.PickupDate ?? (object)DBNull.Value },
+            new SqlParameter("@ReturnDate", SqlDbType.DateTime) { Value = request.ReturnDate ?? (object)DBNull.Value },
+            new SqlParameter("@StreetAddress", SqlDbType.NVarChar, 255) { Value = request.StreetAddress ?? (object)DBNull.Value },
+            new SqlParameter("@City", SqlDbType.NVarChar, 100) { Value = request.City ?? (object)DBNull.Value },
+            new SqlParameter("@Province", SqlDbType.NVarChar, 100) { Value = request.Province ?? (object)DBNull.Value },
+            new SqlParameter("@Zip", SqlDbType.NVarChar, 20) { Value = request.Zip ?? (object)DBNull.Value },
+            new SqlParameter("@MobileNumber", SqlDbType.NVarChar, 20) { Value = request.MobileNumber ?? (object)DBNull.Value },
+            new SqlParameter("@RentalOption", SqlDbType.NVarChar, 50) { Value = request.RentalOption ?? (object)DBNull.Value },
+            new SqlParameter("@PaymentMethod", SqlDbType.NVarChar, 50) { Value = request.PaymentMethod ?? (object)DBNull.Value },
+            new SqlParameter("@PaymentType", SqlDbType.NVarChar, 50) { Value = request.PaymentType ?? (object)DBNull.Value },
+            new SqlParameter("@PaymentProof", SqlDbType.VarBinary) { Value = paymentProofBytes ?? (object)DBNull.Value }
+        };
+
+                await _context.Database.ExecuteSqlRawAsync(insertQuery, parameters);
+
+                Console.WriteLine("Customer request added successfully.");
+                return Ok(new { message = "Customer request added successfully!", referenceId = request.ReferenceId });
+            }
+            catch (DbUpdateException dbEx)
+            {
+                Console.WriteLine($"Database error: {dbEx.Message}");
+                return StatusCode(500, new { message = "Database error occurred.", error = dbEx.Message });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error adding customer request: {ex.Message}");
+                return StatusCode(500, new { message = "An unexpected error occurred.", error = ex.Message });
+            }
+        }
+
     }
 
 

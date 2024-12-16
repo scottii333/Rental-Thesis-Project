@@ -52,13 +52,8 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />, // Handles errors for this route
     children: [
       {
-        path: "",
-        element: (
-          <div>
-            <h1>Welcome to the Admin Dashboard</h1>
-            <p>Select an option from the left menu to get started.</p>
-          </div>
-        ),
+        index: true,
+        element: <AddVan />,
       },
       {
         path: "addVan",

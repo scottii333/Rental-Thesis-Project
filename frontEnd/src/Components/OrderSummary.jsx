@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { MainHeader } from "./MainHeader";
+import axios from "axios";
 
 export const OrderSummary = () => {
   const { state } = useLocation();
@@ -26,6 +27,16 @@ export const OrderSummary = () => {
   const [paymentType, setPaymentType] = useState("full"); // Default: full payment
   const [paymentProof, setPaymentProof] = useState(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState(null);
+  const [referenceId, setReferenceId] = useState("");
+
+  // Generate unique reference ID
+  useEffect(() => {
+    // Generate a unique part of the ID
+    const uniqueNumber = Math.floor(100000 + Math.random() * 900000); // 6-digit random number
+    const fixedPrefix = "02000";
+    const generatedId = `${fixedPrefix}${uniqueNumber}`;
+    setReferenceId(generatedId);
+  }, []);
 
   // Handle payment proof file upload
   const handlePaymentProofUpload = (e) => {
@@ -46,8 +57,19 @@ export const OrderSummary = () => {
       ? URL.createObjectURL(driverLicenseBack)
       : driverLicenseBack;
 
+  // Calculate the down payment amount (30% of the total price)
+  const downPaymentAmount = selectedVan
+    ? (selectedVan.price * 0.3).toFixed(2)
+    : null;
+
   // Confirm details handler
-  const handleConfirmDetails = () => {
+  const handleConfirmDetails = async () => {
+    // Validation for required fields
+    if (!selectedVan || !pickupDate || !returnDate || !mobileNumber) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
     if (paymentMethod === "gcash" && !paymentProof) {
       alert("Please upload proof of payment for GCash before confirming.");
       return;
@@ -55,14 +77,11 @@ export const OrderSummary = () => {
 
     // Gather all the details to log
     const bookingDetails = {
+      referenceId,
       selectedVan,
       userLocation,
-      pickupDate: pickupDate
-        ? new Date(pickupDate).toLocaleDateString()
-        : "N/A",
-      returnDate: returnDate
-        ? new Date(returnDate).toLocaleDateString()
-        : "N/A",
+      pickupDate,
+      returnDate,
       streetAddress,
       city,
       province,
@@ -80,7 +99,41 @@ export const OrderSummary = () => {
     // Log all the details
     console.log("Booking Details:", bookingDetails);
 
-    alert("Details confirmed successfully! Thank you for your payment.");
+    const formData = new FormData();
+    formData.append("referenceId", referenceId); // Append the unique reference ID
+    formData.append("selectedVan", JSON.stringify(selectedVan));
+    formData.append("userLocation", userLocation);
+    formData.append("pickupDate", new Date(pickupDate).toISOString());
+    formData.append("returnDate", new Date(returnDate).toISOString());
+    formData.append("streetAddress", streetAddress);
+    formData.append("city", city);
+    formData.append("province", province);
+    formData.append("zip", zip);
+    formData.append("mobileNumber", mobileNumber);
+    formData.append("rentalOption", rentalOption);
+    formData.append("paymentMethod", paymentMethod);
+    formData.append("paymentType", paymentType);
+    if (paymentProof) formData.append("paymentProof", paymentProof);
+    if (driverLicenseFront)
+      formData.append("driverLicenseFront", driverLicenseFront);
+    if (driverLicenseBack)
+      formData.append("driverLicenseBack", driverLicenseBack);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5098/api/Admin/CustomerRequest",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      console.log("Response:", response.data);
+      alert("Details confirmed and saved successfully!");
+    } catch (error) {
+      console.error("Error saving details:", error);
+      alert("An error occurred while saving details. Please try again.");
+    }
   };
 
   return (
@@ -171,18 +224,10 @@ export const OrderSummary = () => {
 
         {/* Payment Method */}
         <div className="mt-4 bg-white p-4 rounded shadow-md">
-          <h2 className="text-lg font-semibold">Payment Method</h2>
+          <h2 className="text-lg font-semibold">
+            Payment Method - Account Number 09701227170 (Angel Scott De Leon)
+          </h2>
           <div className="flex gap-[1rem]">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="paymentMethod"
-                value="cash"
-                checked={paymentMethod === "cash"}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-              />
-              Cash
-            </label>
             <label className="flex items-center gap-2">
               <input
                 type="radio"
@@ -221,6 +266,11 @@ export const OrderSummary = () => {
               Down Payment
             </label>
           </div>
+          {paymentType === "dp" && (
+            <p className="mt-2 text-sm text-gray-600">
+              Down Payment (30%): <strong>₱{downPaymentAmount}</strong>
+            </p>
+          )}
         </div>
 
         {/* Proof of Payment */}
