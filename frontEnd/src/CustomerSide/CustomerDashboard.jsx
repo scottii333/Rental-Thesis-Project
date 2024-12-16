@@ -18,7 +18,7 @@ export const CustomerDashboard = () => {
       <CustomerHeader />
       <div className="flex gap-1">
         {/* Sidebar */}
-        <div className="flex flex-col h-[45rem] w-[30%] min-w-[10rem] bg-[#201207] text-white text-center pt-[5rem] gap-[1rem] items-center">
+        <div className="flex flex-col h-[45rem] w-[30%] min-w-[10rem] bg-mainBackgroundColor text-white text-center pt-[5rem] gap-[1rem] items-center">
           <button
             className={`w-[95%] h-[2rem] rounded-md ${
               activeTab === "rentStatus"

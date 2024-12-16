@@ -10,6 +10,8 @@ import EasyGear from "../Images/EasyGear.png";
 import { Services } from "./Services";
 import { Pricing } from "./Pricing";
 import { PriceList } from "./PriceList";
+import "aos/dist/aos.css"; // Import AOS styles
+import AOS from "aos";
 
 export const Homepage = () => {
   const [pickupDate, setPickupDate] = useState(null);
@@ -32,6 +34,24 @@ export const Homepage = () => {
     };
 
     fetchVans();
+
+    // Initialize AOS with dynamic offset and repeat animations
+    const offsetValue = window.innerHeight * 0.3; // 20% of the viewport height
+    AOS.init({
+      duration: 1200, // Animation duration in ms
+      once: false, // Allow repeat on scroll
+      offset: offsetValue, // Trigger when 80% of the element is in the viewport
+    });
+
+    // Recalculate offset on resize for responsiveness
+    const handleResize = () => {
+      AOS.refresh(); // Refresh AOS to apply the updated offset
+    };
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   const handleViewVehicles = () => {
@@ -67,19 +87,28 @@ export const Homepage = () => {
         className="h-[40rem] w-full bg-cover bg-no-repeat bg-center flex flex-col items-center justify-center text-white px-4"
         style={{ backgroundImage: `url(${EasyDriveIntroBg})` }}
       >
-        <h1 className="text-3xl md:text-5xl font-bold text-center uppercase mb-4 tracking-[0.5rem]">
+        <h1
+          data-aos="fade-right"
+          className="text-3xl md:text-5xl font-bold text-center uppercase mb-4 tracking-[0.5rem]"
+        >
           HIT THE ROAD <br />
           ESCAPE THE CITY
         </h1>
 
-        <p className="text-sm md:text-lg text-center max-w-lg md:max-w-3xl mb-8">
+        <p
+          data-aos="fade-left"
+          className="text-sm md:text-lg text-center max-w-lg md:max-w-3xl mb-8"
+        >
           Whether you are planning a weekend getaway, a road trip with friends,
           or <br /> a family adventure, we’ve got the perfect vehicle to suit
           your needs.
         </p>
 
         {/* Action Section */}
-        <div className="bg-white bg-opacity-20 rounded-md p-4 shadow-lg flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 items-center w-full max-w-4xl">
+        <div
+          data-aos="fade-right"
+          className="bg-white bg-opacity-20 rounded-md p-4 shadow-lg flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0 items-center w-full max-w-4xl"
+        >
           {/* Location Input */}
           <div className="flex flex-col w-full md:w-1/4">
             <input
@@ -122,7 +151,10 @@ export const Homepage = () => {
       </div>
 
       {/* section for Vehicles */}
-      <div className="flex flex-col border-solid h-auto max-w-[80%] mx-auto mt-[3rem] mb-[3rem] gap-[1rem] p-[1rem]">
+      <div
+        data-aos="fade-left"
+        className="flex flex-col border-solid h-auto max-w-[80%] mx-auto mt-[3rem] mb-[3rem] gap-[1rem] p-[1rem]"
+      >
         <h2 className="text-white text-[2rem] text-center sm:text-left">
           Available Vehicles
         </h2>
