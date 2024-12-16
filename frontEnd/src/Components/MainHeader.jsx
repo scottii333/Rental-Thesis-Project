@@ -24,12 +24,15 @@ export const MainHeader = () => {
           >
             Services
           </Link>
-          <a
-            href="/"
-            className="text-white p-2 rounded-[0.5rem] hover:bg-white hover:text-black hover:rounded-[0.5rem] transition ease-in-out duration-500"
+          <Link
+            to="Pricing"
+            smooth={true}
+            duration={500} // 500ms for smooth scroll
+            className="text-white p-2 rounded-[0.5rem] hover:bg-white hover:text-black hover:rounded-[0.5rem] cursor-pointer transition ease-in-out duration-500"
           >
             Pricing
-          </a>
+          </Link>
+
           <Link
             to="Contact"
             smooth={true}
@@ -104,12 +107,14 @@ export const MainHeader = () => {
           >
             Services
           </Link>
-          <a
-            href="/"
-            className="text-white p-2 rounded-[0.5rem] hover:bg-white hover:text-black hover:rounded-[0.5rem] transition ease-in-out duration-500"
+          <Link
+            to="Pricing"
+            smooth={true}
+            duration={500} // 500ms for smooth scroll
+            className="text-white p-2 rounded-[0.5rem] hover:bg-white hover:text-black hover:rounded-[0.5rem] cursor-pointer transition ease-in-out duration-500"
           >
             Pricing
-          </a>
+          </Link>
           <Link
             to="Contact"
             smooth={true}

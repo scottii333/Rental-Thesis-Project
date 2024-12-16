@@ -9,6 +9,7 @@ import EasyFuel from "../Images/EasyFuel.png";
 import EasyGear from "../Images/EasyGear.png";
 import { Services } from "./Services";
 import { Pricing } from "./Pricing";
+import { PriceList } from "./PriceList";
 
 export const Homepage = () => {
   const [pickupDate, setPickupDate] = useState(null);
@@ -187,6 +188,9 @@ export const Homepage = () => {
 
       {/* section for Services */}
       <Services />
+
+      {/* section for PriceList */}
+      <PriceList />
     </div>
   );
 };
