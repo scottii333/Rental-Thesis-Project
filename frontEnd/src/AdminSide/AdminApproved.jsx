@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import sampleId from "../Images/ID-icon.png";
 
 export const AdminApproved = () => {
   const [requests, setRequests] = useState([]);
@@ -13,7 +12,7 @@ export const AdminApproved = () => {
         const response = await axios.get(
           "http://localhost:5098/api/Admin/GetAllRequests"
         );
-        console.log("Fetched Data:", response.data); // Log data here
+        console.log("Fetched pre-approved Data:", response.data); // Log data here
         setRequests(response.data);
 
         // Fetch all ongoing requests
@@ -128,9 +127,17 @@ export const AdminApproved = () => {
             >
               <h2>Reference no: {request.referenceId}</h2>
 
-              <div className="flex justify-center p-[0.5rem]">
-                <img className="w-[8em]" src={sampleId} alt="License Front" />
-                <img className="w-[8em]" src={sampleId} alt="License Back" />
+              <div className="flex justify-center p-[0.5rem] gap-[0.5rem]">
+                <img
+                  className=" border border-black w-[8em] h-[9rem]"
+                  src={`data:image/png;base64,${request.driverLicenseFront}`}
+                  alt="License Front"
+                />
+                <img
+                  className="border border-black w-[8em] h-[9rem] "
+                  src={`data:image/png;base64,${request.driverLicenseBack}`}
+                  alt="License Back"
+                />
               </div>
               <p className="text-center">Front and Back License</p>
               <img
@@ -190,8 +197,16 @@ export const AdminApproved = () => {
               <h2>Reference no: {request.referenceId}</h2>
 
               <div className="flex justify-center p-[0.5rem]">
-                <img className="w-[8em]" src={sampleId} alt="License Front" />
-                <img className="w-[8em]" src={sampleId} alt="License Back" />
+                <img
+                  className=" border border-black w-[8em] h-[9rem]"
+                  src={`data:image/png;base64,${request.driverLicenseFront}`}
+                  alt="License Front"
+                />
+                <img
+                  className=" border border-black w-[8em] h-[9rem]"
+                  src={`data:image/png;base64,${request.driverLicenseFront}`}
+                  alt="License Back"
+                />
               </div>
               <p className="text-center">Front and Back License</p>
               <img

@@ -322,9 +322,10 @@ namespace backEnd.Controllers
 
                 // Ensure the CustomerRequests table exists
                 var createTableQuery = @"
-        IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CustomerRequests' AND xtype='U')
-        CREATE TABLE CustomerRequests (
+        IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CustomerRequest' AND xtype='U')
+        CREATE TABLE CustomerRequest (
             ReferenceId NVARCHAR(20) NOT NULL PRIMARY KEY,
+            CustomerEmail NVARCHAR(255) NOT NULL DEFAULT '',
             SelectedVan NVARCHAR(MAX) NOT NULL,
             UserLocation NVARCHAR(255) NOT NULL,
             PickupDate DATETIME NOT NULL,
@@ -355,14 +356,15 @@ namespace backEnd.Controllers
 
                 // Insert request into the database
                 var insertQuery = @"
-        INSERT INTO CustomerRequests 
-        (ReferenceId, SelectedVan, UserLocation, PickupDate, ReturnDate, StreetAddress, City, Province, Zip, MobileNumber, RentalOption, PaymentMethod, PaymentType, PaymentProof, DriverLicenseFront, DriverLicenseBack)
+        INSERT INTO CustomerRequest 
+        (ReferenceId, CustomerEmail, SelectedVan, UserLocation, PickupDate, ReturnDate, StreetAddress, City, Province, Zip, MobileNumber, RentalOption, PaymentMethod, PaymentType, PaymentProof, DriverLicenseFront, DriverLicenseBack)
         VALUES 
-        (@ReferenceId, @SelectedVan, @UserLocation, @PickupDate, @ReturnDate, @StreetAddress, @City, @Province, @Zip, @MobileNumber, @RentalOption, @PaymentMethod, @PaymentType, @PaymentProof, @DriverLicenseFront, @DriverLicenseBack)";
+        (@ReferenceId, @CustomerEmail, @SelectedVan, @UserLocation, @PickupDate, @ReturnDate, @StreetAddress, @City, @Province, @Zip, @MobileNumber, @RentalOption, @PaymentMethod, @PaymentType, @PaymentProof, @DriverLicenseFront, @DriverLicenseBack)";
 
                 var parameters = new[]
                 {
             new SqlParameter("@ReferenceId", SqlDbType.NVarChar, 20) { Value = request.ReferenceId },
+            new SqlParameter("@CustomerEmail", SqlDbType.NVarChar, 255) { Value = request.CustomerEmail ?? string.Empty },
             new SqlParameter("@SelectedVan", SqlDbType.NVarChar) { Value = request.SelectedVan ?? (object)DBNull.Value },
             new SqlParameter("@UserLocation", SqlDbType.NVarChar, 255) { Value = request.UserLocation ?? (object)DBNull.Value },
             new SqlParameter("@PickupDate", SqlDbType.DateTime) { Value = request.PickupDate ?? (object)DBNull.Value },

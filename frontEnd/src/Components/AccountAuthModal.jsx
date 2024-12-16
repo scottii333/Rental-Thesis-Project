@@ -68,11 +68,11 @@ export const AccountAuthModal = ({
         setMessage(`Welcome, ${userFullName}!`);
         alert("Login successful!");
         // Pass the email to the parent component
-        // onSuccess(email);
+        onSuccess(email);
 
-        if (onSuccess) {
-          onSuccess(email); // Pass the email to the parent component
-        }
+        // if (onSuccess) {
+        //   onSuccess(email); // Pass the email to the parent component
+        // }
 
         // Redirect to the /customer route
         navigate("/customer");
@@ -181,5 +181,5 @@ AccountAuthModal.propTypes = {
   onClose: PropTypes.func.isRequired, // Function to close the modal (required)
   isSignUp: PropTypes.bool.isRequired, // Boolean to toggle between Sign Up and Log In (required)
   toggleMode: PropTypes.func.isRequired, // Function to toggle Sign Up / Log In mode (required)
-  onSuccess: PropTypes.func, // Notify parent component about successful login/signup
+  onSuccess: PropTypes.func.isRequired, // Notify parent component about successful login/signup
 };
