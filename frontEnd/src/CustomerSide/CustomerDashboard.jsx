@@ -7,6 +7,8 @@ export const CustomerDashboard = () => {
   const [activeTab, setActiveTab] = useState("rentStatus"); // Default to Rent Status
   const navigate = useNavigate(); // Initialize navigate
   const [history, setHistory] = useState([]);
+  const [ongoingRequests, setOngoingRequests] = useState([]);
+  const [requests, setRequests] = useState([]);
 
   // Function to handle Logout
   const handleLogout = () => {
@@ -31,12 +33,37 @@ export const CustomerDashboard = () => {
     fetchHistory();
   }, []);
 
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5098/api/Admin/GetAllRequests"
+        );
+        console.log("Fetched pre-approved Data:", response.data); // Log data here
+        setRequests(response.data);
+
+        // Fetch all ongoing requests
+        const ongoingResponse = await axios.get(
+          "http://localhost:5098/api/Admin/GetOngoingRequests"
+        );
+
+        console.log("Fetched Ongoing Data:", ongoingResponse.data);
+
+        setOngoingRequests(ongoingResponse.data);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+
+    fetchRequests();
+  }, []);
+
   return (
     <div>
       <CustomerHeader />
       <div className="flex gap-1">
         {/* Sidebar */}
-        <div className="flex flex-col h-[45rem] w-[30%] min-w-[10rem] bg-mainBackgroundColor text-white text-center pt-[5rem] gap-[1rem] items-center">
+        <div className="flex flex-col h-[55rem] w-[30%] min-w-[10rem] bg-mainBackgroundColor text-white text-center pt-[5rem] gap-[1rem] items-center">
           <button
             className={`w-[95%] h-[2rem] rounded-md ${
               activeTab === "rentStatus"
@@ -68,102 +95,123 @@ export const CustomerDashboard = () => {
         {/* Main Content */}
         <div className="h-[auto] w-[70%] ">
           {activeTab === "rentStatus" && (
-            <div className=" h-[39rem] w-[100%]   text-center flex flex-col items-center justify-center   ">
-              <div className=" w-[100%]    p-[1rem] h-[24rem] overflow-x-scroll flex gap-[1rem]   ">
-                <div className="gap-[1rem] flex flex-shrink-0 flex-col  h-[20rem] w-[25rem] pt-[1rem] items-center p-[1rem] rounded-md shadow-md">
-                  <h2>
-                    <strong>Status:</strong> Verification on progress
-                  </h2>
-                  <h2>
-                    <strong>Reference no:</strong> 0200319488
-                  </h2>
-                  <h3>
-                    <strong>Van:</strong> Foton Trasnvan
-                  </h3>
-                  <h3>
-                    <strong>Location:</strong> Caloocan
-                  </h3>
-                  <h3>
-                    <strong>Pick-up</strong>11/26/2024
-                  </h3>
-                  <h3>
-                    <strong>Return:</strong> 12/3/2024
-                  </h3>
-                  <h3>
-                    <strong>Mobile no:</strong> 09918121869
-                  </h3>
-                </div>
-                <div className="gap-[1rem] flex flex-shrink-0 flex-col  h-[20rem] w-[25rem] pt-[1rem] items-center p-[1rem] rounded-md shadow-md">
-                  <h2>
-                    <strong>Status:</strong> Verification on progress
-                  </h2>
-                  <h2>
-                    <strong>Reference no:</strong> 0200319489
-                  </h2>
-                  <h3>
-                    <strong>Van:</strong> Hyundai Trasnvan
-                  </h3>
-                  <h3>
-                    <strong>Location:</strong> Cavite
-                  </h3>
-                  <h3>
-                    <strong>Pick-up</strong> 12/5/2024
-                  </h3>
-                  <h3>
-                    <strong>Return:</strong> 12/7/2024
-                  </h3>
-                  <h3>
-                    <strong>Mobile no:</strong> 09917622623
-                  </h3>
-                </div>
-                <div className="gap-[1rem] flex flex-shrink-0 flex-col  h-[20rem] w-[25rem] pt-[1rem] items-center p-[1rem] rounded-md shadow-md">
-                  <h2>
-                    <strong>Status:</strong> Verification on progress
-                  </h2>
-                  <h2>
-                    <strong>Reference no:</strong> 0200319489
-                  </h2>
-                  <h3>
-                    <strong>Van:</strong> Hyundai Trasnvan
-                  </h3>
-                  <h3>
-                    <strong>Location:</strong> Cavite
-                  </h3>
-                  <h3>
-                    <strong>Pick-up</strong> 12/5/2024
-                  </h3>
-                  <h3>
-                    <strong>Return:</strong> 12/7/2024
-                  </h3>
-                  <h3>
-                    <strong>Mobile no:</strong> 09917622623
-                  </h3>
-                </div>
-                <div className="gap-[1rem] flex flex-shrink-0 flex-col  h-[20rem] w-[25rem] pt-[1rem] items-center p-[1rem] rounded-md shadow-md">
-                  <h2>
-                    <strong>Status:</strong> Verification on progress
-                  </h2>
-                  <h2>
-                    <strong>Reference no:</strong> 0200319489
-                  </h2>
-                  <h3>
-                    <strong>Van:</strong> Hyundai Trasnvan
-                  </h3>
-                  <h3>
-                    <strong>Location:</strong> Cavite
-                  </h3>
-                  <h3>
-                    <strong>Pick-up</strong> 12/5/2024
-                  </h3>
-                  <h3>
-                    <strong>Return:</strong> 12/7/2024
-                  </h3>
-                  <h3>
-                    <strong>Mobile no:</strong> 09917622623
-                  </h3>
+            <div className="flex gap-[0.5rem] w-[100%] overflow-x-scroll">
+              <div>
+                <h2 className="text-center font-bold text-[2rem]">
+                  Ongoing Process
+                </h2>
+                <div className="flex flex-nowrap p-[1rem] h-[50rem] w-[30rem] overflow-x-scroll gap-[1rem] shrink-0 shadow-2xl rounded-md border border-black">
+                  {requests.map((request) => (
+                    <div
+                      key={request.referenceId}
+                      className="border border-black p-[1rem] w-[20rem] flex-shrink-0 flex flex-col text-center items-center gap-[0.5rem] rounded-md "
+                    >
+                      <h2>Reference no: {request.referenceId}</h2>
+
+                      <div className="flex gap-[0.5rem] justify-center p-[0.5rem]">
+                        <img
+                          className=" border border-black w-[8em] h-[9rem]"
+                          src={`data:image/png;base64,${request.driverLicenseFront}`}
+                          alt="License Front"
+                        />
+                        <img
+                          className=" border border-black w-[8em] h-[9rem]"
+                          src={`data:image/png;base64,${request.driverLicenseBack}`}
+                          alt="License Back"
+                        />
+                      </div>
+                      <p className="text-center">Front and Back License</p>
+                      <img
+                        src={`data:image/png;base64,${request.paymentProof}`}
+                        className="border border-black w-[10rem] h-[10rem] mt-[0.5rem]"
+                        alt="Gcash Proof Payment"
+                      />
+                      <p className="text-center">Gcash Proof Payment</p>
+                      <p>Location: {request.userLocation || "N/A"}</p>
+                      <p>
+                        Pickup Date:{" "}
+                        {new Date(request.pickupDate).toLocaleDateString()}
+                      </p>
+                      <p>
+                        Dropoff Date:{" "}
+                        {new Date(request.returnDate).toLocaleDateString()}
+                      </p>
+                      <p>
+                        Van Name:{" "}
+                        {request.selectedVan
+                          ? JSON.parse(request.selectedVan).name
+                          : "N/A"}
+                      </p>
+                      <p>Rental Option: {request.rentalOption}</p>
+                      <p>Payment Type: {request.paymentType}</p>
+                      <p>
+                        Price:{" "}
+                        {request.selectedVan
+                          ? `₱${JSON.parse(request.selectedVan).price}`
+                          : "N/A"}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <h2>Swipe to right</h2>
+              <div>
+                <h2 className="text-center font-bold text-[2rem]">
+                  Ongoing Rent
+                </h2>
+                <div className="flex flex-nowrap p-[1rem] h-[50rem] w-[30rem] overflow-x-scroll gap-[1rem] shrink-0 shadow-2xl rounded-md border border-black">
+                  {ongoingRequests.map((request) => (
+                    <div
+                      key={request.referenceId}
+                      className="border border-black p-[1rem] w-[20rem] flex-shrink-0 flex flex-col text-center items-center gap-[0.5rem] rounded-md "
+                    >
+                      <h2>Reference no: {request.referenceId}</h2>
+
+                      <div className="flex gap-[0.5rem] justify-center p-[0.5rem]">
+                        <img
+                          className=" border border-black w-[8em] h-[9rem]"
+                          src={`data:image/png;base64,${request.driverLicenseFront}`}
+                          alt="License Front"
+                        />
+                        <img
+                          className=" border border-black w-[8em] h-[9rem]"
+                          src={`data:image/png;base64,${request.driverLicenseBack}`}
+                          alt="License Back"
+                        />
+                      </div>
+                      <p className="text-center">Front and Back License</p>
+                      <img
+                        src={`data:image/png;base64,${request.paymentProof}`}
+                        className="border border-black w-[10rem] h-[10rem] mt-[0.5rem]"
+                        alt="Gcash Proof Payment"
+                      />
+                      <p className="text-center">Gcash Proof Payment</p>
+                      <p>Location: {request.userLocation || "N/A"}</p>
+                      <p>
+                        Pickup Date:{" "}
+                        {new Date(request.pickupDate).toLocaleDateString()}
+                      </p>
+                      <p>
+                        Dropoff Date:{" "}
+                        {new Date(request.returnDate).toLocaleDateString()}
+                      </p>
+                      <p>
+                        Van Name:{" "}
+                        {request.selectedVan
+                          ? JSON.parse(request.selectedVan).name
+                          : "N/A"}
+                      </p>
+                      <p>Rental Option: {request.rentalOption}</p>
+                      <p>Payment Type: {request.paymentType}</p>
+                      <p>
+                        Price:{" "}
+                        {request.selectedVan
+                          ? `₱${JSON.parse(request.selectedVan).price}`
+                          : "N/A"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
