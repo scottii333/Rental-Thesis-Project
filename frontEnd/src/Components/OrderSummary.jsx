@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { MainHeader } from "./MainHeader";
 import axios from "axios";
+import { AccountAuthModal } from "./AccountAuthModal";
 
 export const OrderSummary = () => {
   const { state } = useLocation();
+  const navigate = useNavigate();
 
   // Destructure the passed data
   const {
@@ -23,11 +25,15 @@ export const OrderSummary = () => {
   } = state || {};
 
   // State for payment method, type, and proof of payment
-  const [paymentMethod, setPaymentMethod] = useState("cash"); // Default: cash
+  const [paymentMethod, setPaymentMethod] = useState("gcash"); // Default: cash
   const [paymentType, setPaymentType] = useState("full"); // Default: full payment
   const [paymentProof, setPaymentProof] = useState(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState(null);
   const [referenceId, setReferenceId] = useState("");
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isSignUpMode, setIsSignUpMode] = useState(false);
+
+  const [userEmail, setUserEmail] = useState(null);
 
   // Generate unique reference ID
   useEffect(() => {
@@ -62,45 +68,9 @@ export const OrderSummary = () => {
     ? (selectedVan.price * 0.3).toFixed(2)
     : null;
 
-  // Confirm details handler
-  const handleConfirmDetails = async () => {
-    // Validation for required fields
-    if (!selectedVan || !pickupDate || !returnDate || !mobileNumber) {
-      alert("Please fill in all required fields.");
-      return;
-    }
-
-    if (paymentMethod === "gcash" && !paymentProof) {
-      alert("Please upload proof of payment for GCash before confirming.");
-      return;
-    }
-
-    // Gather all the details to log
-    const bookingDetails = {
-      referenceId,
-      selectedVan,
-      userLocation,
-      pickupDate,
-      returnDate,
-      streetAddress,
-      city,
-      province,
-      zip,
-      mobileNumber,
-      rentalOption:
-        rentalOption === "self-drive" ? "Self-Drive" : "With Driver",
-      paymentDetails: {
-        method: paymentMethod,
-        type: paymentType,
-        proof: paymentProof ? paymentProof.name : "None",
-      },
-    };
-
-    // Log all the details
-    console.log("Booking Details:", bookingDetails);
-
+  const submitBookingDetails = async () => {
     const formData = new FormData();
-    formData.append("referenceId", referenceId); // Append the unique reference ID
+    formData.append("referenceId", referenceId);
     formData.append("selectedVan", JSON.stringify(selectedVan));
     formData.append("userLocation", userLocation);
     formData.append("pickupDate", new Date(pickupDate).toISOString());
@@ -113,6 +83,8 @@ export const OrderSummary = () => {
     formData.append("rentalOption", rentalOption);
     formData.append("paymentMethod", paymentMethod);
     formData.append("paymentType", paymentType);
+    formData.append("customerEmail", userEmail); // Send the actual user email
+
     if (paymentProof) formData.append("paymentProof", paymentProof);
     if (driverLicenseFront)
       formData.append("driverLicenseFront", driverLicenseFront);
@@ -129,11 +101,31 @@ export const OrderSummary = () => {
       );
 
       console.log("Response:", response.data);
-      alert("Details confirmed and saved successfully!");
+      alert("Transaction successful! Your booking request has been submitted.");
+      navigate("/customer");
     } catch (error) {
       console.error("Error saving details:", error);
       alert("An error occurred while saving details. Please try again.");
     }
+  };
+
+  const handleConfirmDetails = async () => {
+    if (!selectedVan || !pickupDate || !returnDate || !mobileNumber) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    if (paymentMethod === "gcash" && !paymentProof) {
+      alert("Please upload proof of payment for GCash before confirming.");
+      return;
+    }
+
+    if (!userEmail) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+
+    submitBookingDetails();
   };
 
   return (
@@ -301,6 +293,19 @@ export const OrderSummary = () => {
           </button>
         </div>
       </div>
+
+      {/* Authentication Modal */}
+      <AccountAuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        isSignUp={isSignUpMode}
+        toggleMode={setIsSignUpMode}
+        onSuccess={(email) => {
+          setUserEmail(email);
+          setIsAuthModalOpen(false);
+          submitBookingDetails(); // Continue booking submission
+        }}
+      />
     </div>
   );
 };

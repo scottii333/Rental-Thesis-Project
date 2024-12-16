@@ -3,7 +3,13 @@ import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-export const AccountAuthModal = ({ isOpen, onClose, isSignUp, toggleMode }) => {
+export const AccountAuthModal = ({
+  isOpen,
+  onClose,
+  isSignUp,
+  toggleMode,
+  onSuccess,
+}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -61,6 +67,8 @@ export const AccountAuthModal = ({ isOpen, onClose, isSignUp, toggleMode }) => {
 
         setMessage(`Welcome, ${userFullName}!`);
         alert("Login successful!");
+        // Pass the email to the parent component
+        onSuccess(email);
 
         // Redirect to the /customer route
         navigate("/customer");
@@ -169,4 +177,5 @@ AccountAuthModal.propTypes = {
   onClose: PropTypes.func.isRequired, // Function to close the modal (required)
   isSignUp: PropTypes.bool.isRequired, // Boolean to toggle between Sign Up and Log In (required)
   toggleMode: PropTypes.func.isRequired, // Function to toggle Sign Up / Log In mode (required)
+  onSuccess: PropTypes.func.isRequired, // Notify parent component about successful login/signup
 };

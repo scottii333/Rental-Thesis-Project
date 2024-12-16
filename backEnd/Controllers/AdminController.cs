@@ -306,11 +306,26 @@ namespace backEnd.Controllers
 
         // POST: api/Admin/CustomerRequest
         [HttpPost("CustomerRequest")]
-        public async Task<IActionResult> CustomerRequest([FromForm] CustomerRequestModel request, [FromForm] IFormFile? paymentProof)
+        public async Task<IActionResult> CustomerRequest(
+     [FromForm] CustomerRequestModel request,
+     [FromForm] IFormFile? paymentProof,
+     [FromForm] IFormFile? driverLicenseFrontFile,
+     [FromForm] IFormFile? driverLicenseBackFile)
         {
             try
             {
+
+                // Log the received email to verify
+                Console.WriteLine($"Received CustomerEmail: {request.CustomerEmail}");
+
+                // Validate email presence
+                if (string.IsNullOrWhiteSpace(request.CustomerEmail))
+                {
+                    return BadRequest(new { message = "CustomerEmail is required." });
+                }
+                Console.WriteLine("=== Incoming Customer Request ===");
                 Console.WriteLine($"ReferenceId: {request.ReferenceId}");
+                Console.WriteLine($"CustomerEmail: {request.CustomerEmail}");
                 Console.WriteLine($"SelectedVan: {request.SelectedVan}");
                 Console.WriteLine($"UserLocation: {request.UserLocation}");
                 Console.WriteLine($"PickupDate: {request.PickupDate}");
@@ -324,14 +339,17 @@ namespace backEnd.Controllers
                 Console.WriteLine($"PaymentMethod: {request.PaymentMethod}");
                 Console.WriteLine($"PaymentType: {request.PaymentType}");
                 Console.WriteLine($"PaymentProofFileName: {paymentProof?.FileName}");
+                Console.WriteLine($"DriverLicenseFrontFileName: {driverLicenseFrontFile?.FileName}");
+                Console.WriteLine($"DriverLicenseBackFileName: {driverLicenseBackFile?.FileName}");
+
                 Console.WriteLine("Checking if the CustomerRequests table exists...");
 
-
-                // Ensure the CustomerRequests table exists
-                var tableExistsQuery = @"
-        IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CustomerRequests' AND xtype='U')
-        CREATE TABLE CustomerRequests (
-            ReferenceId NVARCHAR(20) NOT NULL PRIMARY KEY,
+                // Ensure table exists
+                var createTableQuery = @"
+        IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CustomerRequest' AND xtype='U')
+        CREATE TABLE CustomerRequest (
+            ReferenceId NVARCHAR(20) NOT NULL,
+            CustomerEmail NVARCHAR(255) NOT NULL,
             SelectedVan NVARCHAR(MAX) NOT NULL,
             UserLocation NVARCHAR(255) NOT NULL,
             PickupDate DATETIME NOT NULL,
@@ -344,24 +362,30 @@ namespace backEnd.Controllers
             RentalOption NVARCHAR(50) NOT NULL,
             PaymentMethod NVARCHAR(50) NOT NULL,
             PaymentType NVARCHAR(50) NOT NULL,
-            PaymentProof VARBINARY(MAX) NULL
+            PaymentProof VARBINARY(MAX) NULL,
+            DriverLicenseFront VARBINARY(MAX) NULL,
+            DriverLicenseBack VARBINARY(MAX) NULL,
+            PRIMARY KEY (ReferenceId, CustomerEmail)
         )";
-                await _context.Database.ExecuteSqlRawAsync(tableExistsQuery);
+                await _context.Database.ExecuteSqlRawAsync(createTableQuery);
 
-                Console.WriteLine("Table check complete. Adding new customer request...");
+                Console.WriteLine("Table check complete. Validating ReferenceId...");
 
-                // Check if the ReferenceId is unique
+                // Check for existing request with the same ReferenceId and CustomerEmail
                 var existingRequest = await _context.CustomerRequests
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(cr => cr.ReferenceId == request.ReferenceId);
+                    .FirstOrDefaultAsync(cr => cr.ReferenceId == request.ReferenceId && cr.CustomerEmail == request.CustomerEmail);
 
                 if (existingRequest != null)
                 {
-                    return BadRequest(new { message = "ReferenceId must be unique." });
+                    return BadRequest(new { message = "A request with the same ReferenceId and CustomerEmail already exists." });
                 }
 
-                // Convert the payment proof file to a byte array if provided
+                // Convert files to byte arrays
                 byte[]? paymentProofBytes = null;
+                byte[]? frontBytes = null;
+                byte[]? backBytes = null;
+
                 if (paymentProof != null)
                 {
                     using (var ms = new MemoryStream())
@@ -371,16 +395,37 @@ namespace backEnd.Controllers
                     }
                 }
 
-                // Use parameterized query to insert the request into the database
+                if (driverLicenseFrontFile != null)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        await driverLicenseFrontFile.CopyToAsync(ms);
+                        frontBytes = ms.ToArray();
+                    }
+                }
+
+                if (driverLicenseBackFile != null)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        await driverLicenseBackFile.CopyToAsync(ms);
+                        backBytes = ms.ToArray();
+                    }
+                }
+
+                Console.WriteLine("File conversion complete. Inserting request into the database...");
+
+                // Insert into the database
                 var insertQuery = @"
-        INSERT INTO CustomerRequests 
-        (ReferenceId, SelectedVan, UserLocation, PickupDate, ReturnDate, StreetAddress, City, Province, Zip, MobileNumber, RentalOption, PaymentMethod, PaymentType, PaymentProof)
+        INSERT INTO CustomerRequest 
+        (ReferenceId, CustomerEmail, SelectedVan, UserLocation, PickupDate, ReturnDate, StreetAddress, City, Province, Zip, MobileNumber, RentalOption, PaymentMethod, PaymentType, PaymentProof, DriverLicenseFront, DriverLicenseBack)
         VALUES 
-        (@ReferenceId, @SelectedVan, @UserLocation, @PickupDate, @ReturnDate, @StreetAddress, @City, @Province, @Zip, @MobileNumber, @RentalOption, @PaymentMethod, @PaymentType, @PaymentProof)";
+        (@ReferenceId, @CustomerEmail, @SelectedVan, @UserLocation, @PickupDate, @ReturnDate, @StreetAddress, @City, @Province, @Zip, @MobileNumber, @RentalOption, @PaymentMethod, @PaymentType, @PaymentProof, @DriverLicenseFront, @DriverLicenseBack)";
 
                 var parameters = new[]
                 {
             new SqlParameter("@ReferenceId", SqlDbType.NVarChar, 20) { Value = request.ReferenceId },
+            new SqlParameter("@CustomerEmail", SqlDbType.NVarChar, 255) { Value = request.CustomerEmail },
             new SqlParameter("@SelectedVan", SqlDbType.NVarChar) { Value = request.SelectedVan ?? (object)DBNull.Value },
             new SqlParameter("@UserLocation", SqlDbType.NVarChar, 255) { Value = request.UserLocation ?? (object)DBNull.Value },
             new SqlParameter("@PickupDate", SqlDbType.DateTime) { Value = request.PickupDate ?? (object)DBNull.Value },
@@ -393,7 +438,9 @@ namespace backEnd.Controllers
             new SqlParameter("@RentalOption", SqlDbType.NVarChar, 50) { Value = request.RentalOption ?? (object)DBNull.Value },
             new SqlParameter("@PaymentMethod", SqlDbType.NVarChar, 50) { Value = request.PaymentMethod ?? (object)DBNull.Value },
             new SqlParameter("@PaymentType", SqlDbType.NVarChar, 50) { Value = request.PaymentType ?? (object)DBNull.Value },
-            new SqlParameter("@PaymentProof", SqlDbType.VarBinary) { Value = paymentProofBytes ?? (object)DBNull.Value }
+            new SqlParameter("@PaymentProof", SqlDbType.VarBinary) { Value = paymentProofBytes ?? (object)DBNull.Value },
+            new SqlParameter("@DriverLicenseFront", SqlDbType.VarBinary) { Value = frontBytes ?? (object)DBNull.Value },
+            new SqlParameter("@DriverLicenseBack", SqlDbType.VarBinary) { Value = backBytes ?? (object)DBNull.Value }
         };
 
                 await _context.Database.ExecuteSqlRawAsync(insertQuery, parameters);
@@ -401,17 +448,28 @@ namespace backEnd.Controllers
                 Console.WriteLine("Customer request added successfully.");
                 return Ok(new { message = "Customer request added successfully!", referenceId = request.ReferenceId });
             }
-            catch (DbUpdateException dbEx)
-            {
-                Console.WriteLine($"Database error: {dbEx.Message}");
-                return StatusCode(500, new { message = "Database error occurred.", error = dbEx.Message });
-            }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error adding customer request: {ex.Message}");
                 return StatusCode(500, new { message = "An unexpected error occurred.", error = ex.Message });
             }
         }
+
+
+
+[HttpGet("GetAllRequests")]
+public async Task<IActionResult> GetAllRequests()
+{
+    try
+    {
+        var customerRequests = await _context.CustomerRequests.ToListAsync();
+        return Ok(customerRequests);
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new { message = "An error occurred while retrieving data.", error = ex.Message });
+    }
+}
 
     }
 

@@ -40,7 +40,7 @@ namespace backEnd.Data
             modelBuilder.Entity<CustomerModel>().HasKey(c => c.Id);
 
             // Map CustomerRequestModel to CustomerRequests table
-            modelBuilder.Entity<CustomerRequestModel>().ToTable("CustomerRequests");
+            modelBuilder.Entity<CustomerRequestModel>().ToTable("CustomerRequest");
             modelBuilder.Entity<CustomerRequestModel>().HasKey(cr => cr.ReferenceId); // Set ReferenceId as PK
             modelBuilder.Entity<CustomerRequestModel>().Property(cr => cr.PaymentProof).HasColumnType("varbinary(max)"); // Configure binary type
             modelBuilder.Entity<CustomerRequestModel>().Property(cr => cr.ReferenceId).IsRequired(); // Ensure ReferenceId is not null
