@@ -19,6 +19,12 @@ namespace backEnd.Data
 
         public required DbSet<CustomerRequestModel> CustomerRequests { get; set; }
 
+        public required DbSet<CustomerOngoing> CustomerOngoing { get; set; }
+
+        public required DbSet<CustomerHistory> CustomerHistory { get; set; }
+
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Map AdminModel to AdminAcc table
@@ -46,6 +52,41 @@ namespace backEnd.Data
             modelBuilder.Entity<CustomerRequestModel>().Property(cr => cr.ReferenceId).IsRequired(); // Ensure ReferenceId is not null
             modelBuilder.Entity<CustomerRequestModel>().Property(cr => cr.SelectedVan).IsRequired();
 
+
+            // Configure CustomerOngoing table
+            modelBuilder.Entity<CustomerOngoing>()
+                .HasKey(c => c.ReferenceId);
+
+            // Map CustomerHistory table and configure it
+            modelBuilder.Entity<CustomerHistory>()
+                .ToTable("CustomerHistory");
+            modelBuilder.Entity<CustomerHistory>()
+                .HasKey(ch => ch.ReferenceId);
+
+            modelBuilder.Entity<CustomerHistory>()
+                .Property(ch => ch.Status)
+                .IsRequired();
+
+            // Configure fields for CustomerHistory
+            modelBuilder.Entity<CustomerHistory>()
+                .Property(ch => ch.SelectedVan)
+                .IsRequired();
+
+            modelBuilder.Entity<CustomerHistory>()
+                .Property(ch => ch.UserLocation)
+                .IsRequired();
+
+            modelBuilder.Entity<CustomerHistory>()
+                .Property(ch => ch.PickupDate)
+                .IsRequired();
+
+            modelBuilder.Entity<CustomerHistory>()
+                .Property(ch => ch.ReturnDate)
+                .IsRequired();
+
+            modelBuilder.Entity<CustomerHistory>()
+                .Property(ch => ch.Price)
+                .IsRequired();
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

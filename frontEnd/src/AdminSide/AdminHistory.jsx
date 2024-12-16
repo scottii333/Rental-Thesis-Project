@@ -1,102 +1,87 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
+
 export const AdminHistory = () => {
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5098/api/Admin/GetCustomerHistory"
+        );
+        console.log("Fetched History Data:", response.data);
+        setHistory(response.data);
+      } catch (err) {
+        console.error("Error fetching history data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[50%]">
+        <p className="text-center">Loading...</p>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <div className="  h-[35rem] p-[1rem] overflow-x-scroll flex flex-col shadow-md rounded-md   ">
+    <div className="overflow-x-auto p-4">
+      <div className="w-[60rem] shadow-lg rounded-lg overflow-hidden border border-gray-200">
         {/* Data Header */}
-        <div className="flex gap-[1rem]  p-[1rem]  w-[80rem] bg-gray-100 h-[4rem] ">
-          <h2 className=" w-[10rem] text-center border-r-[1px] border-black font-bold text-gray-600">
-            Reference no
-          </h2>
-          <h2 className=" w-[10rem] text-center border-r-[1px] border-black  font-bold text-gray-600">
-            Van
-          </h2>
-          <h2 className=" w-[10rem] text-center border-r-[1px] border-black  font-bold text-gray-600">
-            Location
-          </h2>
-          <h2 className=" w-[10rem] text-center border-r-[1px] border-black  font-bold text-gray-600">
-            Pick-Up
-          </h2>
-          <h2 className=" w-[10rem] text-center border-r-[1px] border-black  font-bold text-gray-600">
-            Return
-          </h2>
-          <h2 className=" w-[10rem] text-center border-r-[1px] border-black  font-bold text-gray-600">
-            Price
-          </h2>
-          <h2 className=" w-[10rem] text-center border-r-[1px] border-black font-bold text-gray-600">
-            Status
-          </h2>
+        <div className="w-full bg-gray-100 text-gray-700">
+          <div className="grid grid-cols-7 gap-4 p-4 text-center text-sm font-semibold">
+            <div className="text-center">Reference No</div>
+            <div className="text-center">Van</div>
+            <div className="text-center">Location</div>
+            <div className="text-center">Pick-Up</div>
+            <div className="text-center">Return</div>
+            <div className="text-center">Price</div>
+            <div className="text-center">Status</div>
+          </div>
         </div>
 
-        {/* Data sample Rows */}
-        <div className="flex gap-[1rem]  p-[1rem]  w-[80rem]  h-[4rem] ">
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            0200319488
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            Foton Trasnvan
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            Caloocan
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            11/26/2024
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            12/3/2024
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            2500
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center text-green-400 font-bold">
-            Completed
-          </h2>
-        </div>
-        <div className="flex gap-[1rem]  p-[1rem]  w-[80rem]  h-[4rem] ">
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            0200319489
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            Hyundai Trasnvan
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            Cavite
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            12/5/2024
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            12/7/2024
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            4500
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center text-orange-400 font-bold">
-            Rejected
-          </h2>
-        </div>
-        <div className="flex gap-[1rem]  p-[1rem]  w-[80rem]  h-[4rem] ">
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            0200319490
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            Honda Trasnvan
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            Quezon
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            12/10/2024
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            12/13/2024
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center">
-            3500
-          </h2>
-          <h2 className="border-r-[1px] border-black w-[10rem] text-center text-red-400 font-bold">
-            Canceled
-          </h2>
-        </div>
+        {/* Data Rows */}
+        {history.map((record) => (
+          <div
+            key={record.referenceId}
+            className="grid grid-cols-7 gap-4 p-4 items-center hover:bg-gray-50"
+          >
+            <div className="text-center text-gray-800">
+              {record.referenceId}
+            </div>
+            <div className="text-center text-gray-800">
+              {record.selectedVan ? JSON.parse(record.selectedVan).name : "N/A"}
+            </div>
+            <div className="text-center text-gray-800">
+              {record.userLocation}
+            </div>
+            <div className="text-center text-gray-800">
+              {new Date(record.pickupDate).toLocaleDateString()}
+            </div>
+            <div className="text-center text-gray-800">
+              {new Date(record.returnDate).toLocaleDateString()}
+            </div>
+            <div className="text-center text-gray-800">₱{record.price}</div>
+            <div
+              className={`text-center font-bold ${
+                record.status === "Completed"
+                  ? "text-green-400"
+                  : record.status === "Canceled"
+                  ? "text-red-400"
+                  : "text-orange-400"
+              }`}
+            >
+              {record.status}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

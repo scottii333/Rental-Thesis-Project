@@ -32,7 +32,6 @@ builder.Services.AddDbContext<DataContext>((serviceProvider, options) =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 var app = builder.Build();
 
 // Apply CORS policy

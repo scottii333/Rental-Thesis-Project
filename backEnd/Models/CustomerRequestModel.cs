@@ -1,10 +1,9 @@
-using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Mvc;
 
 public class CustomerRequestModel
 {
     public required string ReferenceId { get; set; } // Primary Key
-    public required string CustomerEmail { get; set; } // Foreign Key for customer
-
+    public required string CustomerEmail { get; set; }
     public string? SelectedVan { get; set; }
     public string? UserLocation { get; set; }
     public DateTime? PickupDate { get; set; }
@@ -17,24 +16,7 @@ public class CustomerRequestModel
     public string? RentalOption { get; set; }
     public string? PaymentMethod { get; set; }
     public string? PaymentType { get; set; }
-
-    // Excluded from database mapping; handles uploaded files
-    [NotMapped]
-    public IFormFile? PaymentProofFile { get; set; }
-
-    [NotMapped]
-    public IFormFile? DriverLicenseFrontFile { get; set; }
-
-    [NotMapped]
-    public IFormFile? DriverLicenseBackFile { get; set; }
-
-    // Database-stored binary data
-    [Column(TypeName = "varbinary(max)")]
-    public byte[]? PaymentProof { get; set; }
-
-    [Column(TypeName = "varbinary(max)")]
-    public byte[]? DriverLicenseFront { get; set; }
-
-    [Column(TypeName = "varbinary(max)")]
-    public byte[]? DriverLicenseBack { get; set; }
+    public byte[]? PaymentProof { get; set; } // Changed to byte[]
+    public byte[]? DriverLicenseFront { get; set; } // Changed to byte[]
+    public byte[]? DriverLicenseBack { get; set; } // Changed to byte[]
 }

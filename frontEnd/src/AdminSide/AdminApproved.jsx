@@ -15,6 +15,15 @@ export const AdminApproved = () => {
         );
         console.log("Fetched Data:", response.data); // Log data here
         setRequests(response.data);
+
+        // Fetch all ongoing requests
+        const ongoingResponse = await axios.get(
+          "http://localhost:5098/api/Admin/GetOngoingRequests"
+        );
+
+        console.log("Fetched Ongoing Data:", ongoingResponse.data);
+
+        setOngoingRequests(ongoingResponse.data);
       } catch (err) {
         console.error("Error fetching data:", err);
       } finally {
@@ -25,19 +34,76 @@ export const AdminApproved = () => {
     fetchRequests();
   }, []);
 
-  const handleApprove = (referenceId) => {
-    const approvedRequest = requests.find(
-      (request) => request.referenceId === referenceId
-    );
+  const handleApprove = async (referenceId) => {
+    try {
+      // Send approved request to the backend
+      await axios.post(`http://localhost:5098/api/Admin/ApproveRequest`, {
+        referenceId,
+      });
 
-    if (approvedRequest) {
-      // Add to On-going list
-      setOngoingRequests((prev) => [...prev, approvedRequest]);
+      // Update frontend state
+      const approvedRequest = requests.find(
+        (request) => request.referenceId === referenceId
+      );
 
-      // Remove from Pre-Approval list
+      if (approvedRequest) {
+        setOngoingRequests((prev) => [...prev, approvedRequest]);
+        setRequests((prev) =>
+          prev.filter((request) => request.referenceId !== referenceId)
+        );
+      }
+      alert("Request approved successfully.");
+    } catch (err) {
+      console.error("Error approving request:", err);
+    }
+  };
+
+  const handleReject = async (referenceId) => {
+    try {
+      // Delete rejected request from the backend
+      await axios.delete(`http://localhost:5098/api/Admin/RejectRequest`, {
+        referenceId,
+      });
+      // Update frontend state
       setRequests((prev) =>
         prev.filter((request) => request.referenceId !== referenceId)
       );
+      alert("Request rejected successfully.");
+    } catch (err) {
+      console.error("Error rejecting request:", err);
+    }
+  };
+
+  const handleComplete = async (referenceId) => {
+    try {
+      // Move to completed in backend
+      await axios.post(`http://localhost:5098/api/Admin/CompleteRequest`, {
+        referenceId,
+      });
+
+      // Update frontend state
+      setOngoingRequests((prev) =>
+        prev.filter((request) => request.referenceId !== referenceId)
+      );
+      alert("Request marked as completed.");
+    } catch (err) {
+      console.error("Error marking as completed:", err);
+    }
+  };
+  const handleCancel = async (referenceId) => {
+    try {
+      // Cancel ongoing request in backend
+      await axios.post(`http://localhost:5098/api/Admin/CancelRequest`, {
+        referenceId,
+      });
+
+      // Update frontend state
+      setOngoingRequests((prev) =>
+        prev.filter((request) => request.referenceId !== referenceId)
+      );
+      alert("Request cancelled successfully.");
+    } catch (err) {
+      console.error("Error cancelling request:", err);
     }
   };
 
@@ -50,11 +116,11 @@ export const AdminApproved = () => {
   }
 
   return (
-    <div className="flex gap-[5rem] p-[1rem] overflow-x-scroll">
+    <div className="flex gap-[1rem] p-[1rem] overflow-x-scroll">
       {/* component for pre-approved requests */}
       <div>
         <h2 className="text-center text-2xl font-bold">Pre-Approval</h2>
-        <div className="flex flex-nowrap p-[1rem] h-[50rem] w-[30rem] overflow-x-scroll gap-[1rem] shrink-0 shadow-2xl rounded-md">
+        <div className="flex flex-nowrap p-[1rem] h-[50rem] w-[30rem] overflow-x-scroll gap-[1rem] shrink-0 shadow-2xl rounded-md border border-black">
           {requests.map((request) => (
             <div
               key={request.referenceId}
@@ -101,7 +167,10 @@ export const AdminApproved = () => {
               >
                 Approved
               </button>
-              <button className="bg-red-400 w-[8rem] p-[0.5rem] rounded-md transition duration-300 hover:bg-red-500 hover:scale-105 hover:text-white">
+              <button
+                className="bg-red-400 w-[8rem] p-[0.5rem] rounded-md transition duration-300 hover:bg-red-500 hover:scale-105 hover:text-white"
+                onClick={() => handleReject(request.referenceId)}
+              >
                 Reject
               </button>
             </div>
@@ -112,7 +181,7 @@ export const AdminApproved = () => {
       {/* component for ongoing requests */}
       <div>
         <h2 className="text-center text-2xl font-bold">On-going</h2>
-        <div className="flex flex-nowrap p-[1rem] h-[50rem] w-[30rem] overflow-x-scroll gap-[1rem] shrink-0 shadow-2xl rounded-md">
+        <div className="flex flex-nowrap p-[1rem] h-[50rem] w-[30rem] overflow-x-scroll gap-[1rem] shrink-0 shadow-2xl rounded-md border border-black">
           {ongoingRequests.map((request) => (
             <div
               key={request.referenceId}
@@ -153,10 +222,16 @@ export const AdminApproved = () => {
                   ? `₱${JSON.parse(request.selectedVan).price}`
                   : "N/A"}
               </p>
-              <button className="bg-green-400 w-[8rem] p-[0.5rem] rounded-md transition duration-300 hover:bg-green-500 hover:scale-105 hover:text-white">
+              <button
+                className="bg-green-400 w-[8rem] p-[0.5rem] rounded-md transition duration-300 hover:bg-green-500 hover:scale-105 hover:text-white"
+                onClick={() => handleComplete(request.referenceId)}
+              >
                 Completed
               </button>
-              <button className="bg-red-400 w-[8rem] p-[0.5rem] rounded-md transition duration-300 hover:bg-red-500 hover:scale-105 hover:text-white">
+              <button
+                className="bg-red-400 w-[8rem] p-[0.5rem] rounded-md transition duration-300 hover:bg-red-500 hover:scale-105 hover:text-white"
+                onClick={() => handleCancel(request.referenceId)}
+              >
                 Cancel
               </button>
             </div>

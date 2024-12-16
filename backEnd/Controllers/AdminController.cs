@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using Newtonsoft.Json;
 
 
 
@@ -307,49 +308,23 @@ namespace backEnd.Controllers
         // POST: api/Admin/CustomerRequest
         [HttpPost("CustomerRequest")]
         public async Task<IActionResult> CustomerRequest(
-     [FromForm] CustomerRequestModel request,
-     [FromForm] IFormFile? paymentProof,
-     [FromForm] IFormFile? driverLicenseFrontFile,
-     [FromForm] IFormFile? driverLicenseBackFile)
+    [FromForm] CustomerRequestModel request,
+    [FromForm] IFormFile? paymentProof,
+    [FromForm] IFormFile? driverLicenseFront,
+    [FromForm] IFormFile? driverLicenseBack)
         {
             try
             {
+                // Convert files to byte arrays if provided
+                request.PaymentProof = paymentProof != null ? await ConvertToByteArrayAsync(paymentProof) : null;
+                request.DriverLicenseFront = driverLicenseFront != null ? await ConvertToByteArrayAsync(driverLicenseFront) : null;
+                request.DriverLicenseBack = driverLicenseBack != null ? await ConvertToByteArrayAsync(driverLicenseBack) : null;
 
-                // Log the received email to verify
-                Console.WriteLine($"Received CustomerEmail: {request.CustomerEmail}");
-
-                // Validate email presence
-                if (string.IsNullOrWhiteSpace(request.CustomerEmail))
-                {
-                    return BadRequest(new { message = "CustomerEmail is required." });
-                }
-                Console.WriteLine("=== Incoming Customer Request ===");
-                Console.WriteLine($"ReferenceId: {request.ReferenceId}");
-                Console.WriteLine($"CustomerEmail: {request.CustomerEmail}");
-                Console.WriteLine($"SelectedVan: {request.SelectedVan}");
-                Console.WriteLine($"UserLocation: {request.UserLocation}");
-                Console.WriteLine($"PickupDate: {request.PickupDate}");
-                Console.WriteLine($"ReturnDate: {request.ReturnDate}");
-                Console.WriteLine($"StreetAddress: {request.StreetAddress}");
-                Console.WriteLine($"City: {request.City}");
-                Console.WriteLine($"Province: {request.Province}");
-                Console.WriteLine($"Zip: {request.Zip}");
-                Console.WriteLine($"MobileNumber: {request.MobileNumber}");
-                Console.WriteLine($"RentalOption: {request.RentalOption}");
-                Console.WriteLine($"PaymentMethod: {request.PaymentMethod}");
-                Console.WriteLine($"PaymentType: {request.PaymentType}");
-                Console.WriteLine($"PaymentProofFileName: {paymentProof?.FileName}");
-                Console.WriteLine($"DriverLicenseFrontFileName: {driverLicenseFrontFile?.FileName}");
-                Console.WriteLine($"DriverLicenseBackFileName: {driverLicenseBackFile?.FileName}");
-
-                Console.WriteLine("Checking if the CustomerRequests table exists...");
-
-                // Ensure table exists
+                // Ensure the CustomerRequests table exists
                 var createTableQuery = @"
-        IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CustomerRequest' AND xtype='U')
-        CREATE TABLE CustomerRequest (
-            ReferenceId NVARCHAR(20) NOT NULL,
-            CustomerEmail NVARCHAR(255) NOT NULL,
+        IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CustomerRequests' AND xtype='U')
+        CREATE TABLE CustomerRequests (
+            ReferenceId NVARCHAR(20) NOT NULL PRIMARY KEY,
             SelectedVan NVARCHAR(MAX) NOT NULL,
             UserLocation NVARCHAR(255) NOT NULL,
             PickupDate DATETIME NOT NULL,
@@ -364,68 +339,30 @@ namespace backEnd.Controllers
             PaymentType NVARCHAR(50) NOT NULL,
             PaymentProof VARBINARY(MAX) NULL,
             DriverLicenseFront VARBINARY(MAX) NULL,
-            DriverLicenseBack VARBINARY(MAX) NULL,
-            PRIMARY KEY (ReferenceId, CustomerEmail)
+            DriverLicenseBack VARBINARY(MAX) NULL
         )";
                 await _context.Database.ExecuteSqlRawAsync(createTableQuery);
 
-                Console.WriteLine("Table check complete. Validating ReferenceId...");
-
-                // Check for existing request with the same ReferenceId and CustomerEmail
+                // Check for duplicate ReferenceId
                 var existingRequest = await _context.CustomerRequests
                     .AsNoTracking()
-                    .FirstOrDefaultAsync(cr => cr.ReferenceId == request.ReferenceId && cr.CustomerEmail == request.CustomerEmail);
+                    .FirstOrDefaultAsync(cr => cr.ReferenceId == request.ReferenceId);
 
                 if (existingRequest != null)
                 {
-                    return BadRequest(new { message = "A request with the same ReferenceId and CustomerEmail already exists." });
+                    return BadRequest(new { message = "ReferenceId must be unique." });
                 }
 
-                // Convert files to byte arrays
-                byte[]? paymentProofBytes = null;
-                byte[]? frontBytes = null;
-                byte[]? backBytes = null;
-
-                if (paymentProof != null)
-                {
-                    using (var ms = new MemoryStream())
-                    {
-                        await paymentProof.CopyToAsync(ms);
-                        paymentProofBytes = ms.ToArray();
-                    }
-                }
-
-                if (driverLicenseFrontFile != null)
-                {
-                    using (var ms = new MemoryStream())
-                    {
-                        await driverLicenseFrontFile.CopyToAsync(ms);
-                        frontBytes = ms.ToArray();
-                    }
-                }
-
-                if (driverLicenseBackFile != null)
-                {
-                    using (var ms = new MemoryStream())
-                    {
-                        await driverLicenseBackFile.CopyToAsync(ms);
-                        backBytes = ms.ToArray();
-                    }
-                }
-
-                Console.WriteLine("File conversion complete. Inserting request into the database...");
-
-                // Insert into the database
+                // Insert request into the database
                 var insertQuery = @"
-        INSERT INTO CustomerRequest 
-        (ReferenceId, CustomerEmail, SelectedVan, UserLocation, PickupDate, ReturnDate, StreetAddress, City, Province, Zip, MobileNumber, RentalOption, PaymentMethod, PaymentType, PaymentProof, DriverLicenseFront, DriverLicenseBack)
+        INSERT INTO CustomerRequests 
+        (ReferenceId, SelectedVan, UserLocation, PickupDate, ReturnDate, StreetAddress, City, Province, Zip, MobileNumber, RentalOption, PaymentMethod, PaymentType, PaymentProof, DriverLicenseFront, DriverLicenseBack)
         VALUES 
-        (@ReferenceId, @CustomerEmail, @SelectedVan, @UserLocation, @PickupDate, @ReturnDate, @StreetAddress, @City, @Province, @Zip, @MobileNumber, @RentalOption, @PaymentMethod, @PaymentType, @PaymentProof, @DriverLicenseFront, @DriverLicenseBack)";
+        (@ReferenceId, @SelectedVan, @UserLocation, @PickupDate, @ReturnDate, @StreetAddress, @City, @Province, @Zip, @MobileNumber, @RentalOption, @PaymentMethod, @PaymentType, @PaymentProof, @DriverLicenseFront, @DriverLicenseBack)";
 
                 var parameters = new[]
                 {
             new SqlParameter("@ReferenceId", SqlDbType.NVarChar, 20) { Value = request.ReferenceId },
-            new SqlParameter("@CustomerEmail", SqlDbType.NVarChar, 255) { Value = request.CustomerEmail },
             new SqlParameter("@SelectedVan", SqlDbType.NVarChar) { Value = request.SelectedVan ?? (object)DBNull.Value },
             new SqlParameter("@UserLocation", SqlDbType.NVarChar, 255) { Value = request.UserLocation ?? (object)DBNull.Value },
             new SqlParameter("@PickupDate", SqlDbType.DateTime) { Value = request.PickupDate ?? (object)DBNull.Value },
@@ -438,38 +375,340 @@ namespace backEnd.Controllers
             new SqlParameter("@RentalOption", SqlDbType.NVarChar, 50) { Value = request.RentalOption ?? (object)DBNull.Value },
             new SqlParameter("@PaymentMethod", SqlDbType.NVarChar, 50) { Value = request.PaymentMethod ?? (object)DBNull.Value },
             new SqlParameter("@PaymentType", SqlDbType.NVarChar, 50) { Value = request.PaymentType ?? (object)DBNull.Value },
-            new SqlParameter("@PaymentProof", SqlDbType.VarBinary) { Value = paymentProofBytes ?? (object)DBNull.Value },
-            new SqlParameter("@DriverLicenseFront", SqlDbType.VarBinary) { Value = frontBytes ?? (object)DBNull.Value },
-            new SqlParameter("@DriverLicenseBack", SqlDbType.VarBinary) { Value = backBytes ?? (object)DBNull.Value }
+            new SqlParameter("@PaymentProof", SqlDbType.VarBinary) { Value = request.PaymentProof ?? (object)DBNull.Value },
+            new SqlParameter("@DriverLicenseFront", SqlDbType.VarBinary) { Value = request.DriverLicenseFront ?? (object)DBNull.Value },
+            new SqlParameter("@DriverLicenseBack", SqlDbType.VarBinary) { Value = request.DriverLicenseBack ?? (object)DBNull.Value }
         };
 
                 await _context.Database.ExecuteSqlRawAsync(insertQuery, parameters);
 
-                Console.WriteLine("Customer request added successfully.");
                 return Ok(new { message = "Customer request added successfully!", referenceId = request.ReferenceId });
+            }
+            catch (DbUpdateException dbEx)
+            {
+                return StatusCode(500, new { message = "Database error occurred.", error = dbEx.Message });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error adding customer request: {ex.Message}");
                 return StatusCode(500, new { message = "An unexpected error occurred.", error = ex.Message });
+            }
+        }
+
+        // Helper method to convert IFormFile to byte[]
+        private async Task<byte[]> ConvertToByteArrayAsync(IFormFile file)
+        {
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            return memoryStream.ToArray();
+        }
+
+
+        // GET: api/Admin/GetAllRequests
+        [HttpGet("GetAllRequests")]
+        public async Task<IActionResult> GetAllRequests()
+        {
+            try
+            {
+                // Fetch all requests from the CustomerRequests table
+                var requests = await _context.CustomerRequests.ToListAsync();
+
+                // Transform byte[] fields to Base64 strings for the frontend
+                var transformedRequests = requests.Select(r => new
+                {
+                    r.ReferenceId,
+                    r.CustomerEmail,
+                    r.SelectedVan,
+                    r.UserLocation,
+                    r.PickupDate,
+                    r.ReturnDate,
+                    r.StreetAddress,
+                    r.City,
+                    r.Province,
+                    r.Zip,
+                    r.MobileNumber,
+                    r.RentalOption,
+                    r.PaymentMethod,
+                    r.PaymentType,
+                    PaymentProof = r.PaymentProof != null ? Convert.ToBase64String(r.PaymentProof) : null,
+                    DriverLicenseFront = r.DriverLicenseFront != null ? Convert.ToBase64String(r.DriverLicenseFront) : null,
+                    DriverLicenseBack = r.DriverLicenseBack != null ? Convert.ToBase64String(r.DriverLicenseBack) : null
+                }).ToList();
+
+                return Ok(transformedRequests);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while fetching requests.", error = ex.Message });
             }
         }
 
 
 
-[HttpGet("GetAllRequests")]
-public async Task<IActionResult> GetAllRequests()
-{
-    try
-    {
-        var customerRequests = await _context.CustomerRequests.ToListAsync();
-        return Ok(customerRequests);
-    }
-    catch (Exception ex)
-    {
-        return StatusCode(500, new { message = "An error occurred while retrieving data.", error = ex.Message });
-    }
-}
+        // POST: api/Admin/ApproveRequest
+        [HttpPost("ApproveRequest")]
+        public async Task<IActionResult> ApproveRequest([FromBody] ApproveRequestModel model)
+        {
+            try
+            {
+                // Ensure the CustomerOngoing table exists
+                var createTableQuery = @"
+            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CustomerOngoing' AND xtype='U')
+            CREATE TABLE CustomerOngoing (
+                ReferenceId NVARCHAR(20) NOT NULL PRIMARY KEY,
+                CustomerEmail NVARCHAR(255) NOT NULL,
+                SelectedVan NVARCHAR(MAX) NULL,
+                UserLocation NVARCHAR(255) NULL,
+                PickupDate DATETIME NULL,
+                ReturnDate DATETIME NULL,
+                StreetAddress NVARCHAR(255) NULL,
+                City NVARCHAR(100) NULL,
+                Province NVARCHAR(100) NULL,
+                Zip NVARCHAR(20) NULL,
+                MobileNumber NVARCHAR(20) NULL,
+                RentalOption NVARCHAR(50) NULL,
+                PaymentMethod NVARCHAR(50) NULL,
+                PaymentType NVARCHAR(50) NULL,
+                PaymentProof VARBINARY(MAX) NULL,
+                DriverLicenseFront VARBINARY(MAX) NULL,
+                DriverLicenseBack VARBINARY(MAX) NULL,
+                Status NVARCHAR(50) NOT NULL
+            )";
+                await _context.Database.ExecuteSqlRawAsync(createTableQuery);
+
+                // Find the request in CustomerRequests
+                var existingRequest = await _context.CustomerRequests
+                    .FirstOrDefaultAsync(r => r.ReferenceId == model.ReferenceId);
+
+                if (existingRequest == null)
+                {
+                    return NotFound(new { message = "Request not found." });
+                }
+
+                // Map the request to CustomerOngoing with Status = "Ongoing"
+                var ongoingRequest = new CustomerOngoing
+                {
+                    ReferenceId = existingRequest.ReferenceId,
+                    CustomerEmail = existingRequest.CustomerEmail,
+                    SelectedVan = existingRequest.SelectedVan,
+                    UserLocation = existingRequest.UserLocation,
+                    PickupDate = existingRequest.PickupDate,
+                    ReturnDate = existingRequest.ReturnDate,
+                    StreetAddress = existingRequest.StreetAddress,
+                    City = existingRequest.City,
+                    Province = existingRequest.Province,
+                    Zip = existingRequest.Zip,
+                    MobileNumber = existingRequest.MobileNumber,
+                    RentalOption = existingRequest.RentalOption,
+                    PaymentMethod = existingRequest.PaymentMethod,
+                    PaymentType = existingRequest.PaymentType,
+                    PaymentProof = existingRequest.PaymentProof,
+                    DriverLicenseFront = existingRequest.DriverLicenseFront,
+                    DriverLicenseBack = existingRequest.DriverLicenseBack,
+                    Status = "Ongoing"
+                };
+
+                // Add the ongoing request to CustomerOngoing and remove it from CustomerRequests
+                await _context.CustomerOngoing.AddAsync(ongoingRequest);
+                _context.CustomerRequests.Remove(existingRequest);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Request approved and moved to Ongoing." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred.", error = ex.Message });
+            }
+        }
+
+
+
+        // GET: api/Admin/GetOngoingRequests
+        [HttpGet("GetOngoingRequests")]
+        public async Task<IActionResult> GetOngoingRequests()
+        {
+            try
+            {
+                var ongoingRequests = await _context.CustomerOngoing.ToListAsync();
+                return Ok(ongoingRequests);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error fetching ongoing requests", error = ex.Message });
+            }
+        }
+
+
+        [HttpPost("RejectRequest")]
+        public async Task<IActionResult> RejectRequest([FromBody] CompleteRequestModel model)
+        {
+            try
+            {
+                // Find the request in the CustomerRequests table
+                var requestToReject = await _context.CustomerRequests
+                    .FirstOrDefaultAsync(r => r.ReferenceId == model.ReferenceId);
+
+                if (requestToReject == null)
+                {
+                    return NotFound(new { message = "Request not found in customer requests." });
+                }
+
+                // Parse the SelectedVan JSON and get the price
+                dynamic selectedVan = JsonConvert.DeserializeObject(requestToReject.SelectedVan);
+                decimal price = selectedVan?.price ?? 0;
+
+                // Map the rejected request to CustomerHistory with Status "Rejected"
+                var historyRecord = new CustomerHistory
+                {
+                    ReferenceId = requestToReject.ReferenceId,
+                    SelectedVan = requestToReject.SelectedVan,
+                    UserLocation = requestToReject.UserLocation,
+                    PickupDate = requestToReject.PickupDate.GetValueOrDefault(),
+                    ReturnDate = requestToReject.ReturnDate.GetValueOrDefault(),
+                    Price = price,
+                    Status = "Rejected"
+                };
+
+                // Add to the CustomerHistory table
+                await _context.CustomerHistory.AddAsync(historyRecord);
+
+                // Remove the rejected request from the CustomerRequests table
+                _context.CustomerRequests.Remove(requestToReject);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Request rejected and moved to history." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while rejecting the request.", error = ex.Message });
+            }
+        }
+
+
+
+        [HttpPost("CompleteRequest")]
+        public async Task<IActionResult> CompleteRequest([FromBody] CompleteRequestModel model)
+        {
+            try
+            {
+                // Check if the CustomerHistory table exists, create it if not
+                var createTableQuery = @"
+            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='CustomerHistory' AND xtype='U')
+            CREATE TABLE CustomerHistory (
+                ReferenceId NVARCHAR(20) NOT NULL PRIMARY KEY,
+                SelectedVan NVARCHAR(MAX) NOT NULL,
+                UserLocation NVARCHAR(255) NOT NULL,
+                PickupDate DATETIME NOT NULL,
+                ReturnDate DATETIME NOT NULL,
+                Price DECIMAL NOT NULL,
+                Status NVARCHAR(50) NOT NULL
+            )";
+                await _context.Database.ExecuteSqlRawAsync(createTableQuery);
+
+                // Find the request in the CustomerOngoing table
+                var ongoingRequest = await _context.CustomerOngoing
+                    .FirstOrDefaultAsync(r => r.ReferenceId == model.ReferenceId);
+
+                if (ongoingRequest == null)
+                {
+                    return NotFound(new { message = "Request not found in ongoing requests." });
+                }
+
+                // Parse the SelectedVan JSON and get the price
+                dynamic selectedVan = JsonConvert.DeserializeObject(ongoingRequest.SelectedVan);
+                decimal price = selectedVan?.price ?? 0; // Assuming price is a property of selectedVan
+
+                // Map the ongoing request to CustomerHistory
+                var historyRecord = new CustomerHistory
+                {
+                    ReferenceId = ongoingRequest.ReferenceId,
+                    SelectedVan = ongoingRequest.SelectedVan,
+                    UserLocation = ongoingRequest.UserLocation,
+                    PickupDate = ongoingRequest.PickupDate.GetValueOrDefault(),
+                    ReturnDate = ongoingRequest.ReturnDate.GetValueOrDefault(),
+                    Price = price,
+                    Status = "Completed"
+                };
+
+                // Add to the CustomerHistory table
+                await _context.CustomerHistory.AddAsync(historyRecord);
+
+                // Remove the completed request from the CustomerOngoing table
+                _context.CustomerOngoing.Remove(ongoingRequest);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Request completed and moved to history." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while completing the request.", error = ex.Message });
+            }
+        }
+
+
+
+        [HttpPost("CancelRequest")]
+        public async Task<IActionResult> CancelRequest([FromBody] CompleteRequestModel model)
+        {
+            try
+            {
+                // Find the request in the CustomerOngoing table
+                var ongoingRequest = await _context.CustomerOngoing
+                    .FirstOrDefaultAsync(r => r.ReferenceId == model.ReferenceId);
+
+                if (ongoingRequest == null)
+                {
+                    return NotFound(new { message = "Request not found in ongoing requests." });
+                }
+
+                // Parse the SelectedVan JSON and get the price
+                dynamic selectedVan = JsonConvert.DeserializeObject(ongoingRequest.SelectedVan);
+                decimal price = selectedVan?.price ?? 0;
+
+                // Map the ongoing request to CustomerHistory with Status "Canceled"
+                var historyRecord = new CustomerHistory
+                {
+                    ReferenceId = ongoingRequest.ReferenceId,
+                    SelectedVan = ongoingRequest.SelectedVan,
+                    UserLocation = ongoingRequest.UserLocation,
+                    PickupDate = ongoingRequest.PickupDate.GetValueOrDefault(),
+                    ReturnDate = ongoingRequest.ReturnDate.GetValueOrDefault(),
+                    Price = price,
+                    Status = "Canceled"
+                };
+
+                // Add to the CustomerHistory table
+                await _context.CustomerHistory.AddAsync(historyRecord);
+
+                // Remove the canceled request from the CustomerOngoing table
+                _context.CustomerOngoing.Remove(ongoingRequest);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Request canceled and moved to history." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred while canceling the request.", error = ex.Message });
+            }
+        }
+
+
+        // Example route for customer history
+        [HttpGet("GetCustomerHistory")]
+        public async Task<IActionResult> GetCustomerHistory()
+        {
+            try
+            {
+                // Fetch history data logic
+                var historyData = await _context.CustomerHistory.ToListAsync();
+                return Ok(historyData);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred.", error = ex.Message });
+            }
+        }
+
+
 
     }
 
